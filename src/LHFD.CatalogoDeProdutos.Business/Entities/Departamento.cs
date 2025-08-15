@@ -1,4 +1,4 @@
-﻿namespace LHFD.ProductCatalog.Business.Entities
+﻿namespace LHFD.CatalogoDeProdutos.Business.Entities
 {
     public class Department
     {

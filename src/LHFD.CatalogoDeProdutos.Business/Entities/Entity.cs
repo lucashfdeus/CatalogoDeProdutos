@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace LHFD.ProductCatalog.Business.Entities
+namespace LHFD.CatalogoDeProdutos.Business.Entities
 {
     public abstract class Entity
     {

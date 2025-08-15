@@ -1,15 +1,14 @@
-﻿using LHFD.ProductCatalog.Business.Entities;
+﻿using LHFD.CatalogoDeProdutos.Business.Entities;
 
-namespace LHFD.ProductCatalog.Business.Interfaces
+namespace LHFD.CatalogoDeProdutos.Business.Interfaces
 {
     public interface IRepository<TEntity> : IDisposable where TEntity : Entity
     {
-        Task<TEntity?> GetById(Guid id);
-        Task<List<TEntity>> GetAll();
         void Create(TEntity entity);
         void Update(TEntity entity);
+        Task<TEntity?> GetById(Guid id);
+        Task<List<TEntity>> GetAll();
         void Delete(Guid id);
-
         Task<int> SaveChanges();
     }
 }

@@ -1,26 +1,19 @@
-﻿using LHFD.ProductCatalog.Business.Entities;
-using LHFD.ProductCatalog.Business.Interfaces;
-using LHFD.ProductCatalog.Data.Context;
+﻿using LHFD.CatalogoDeProdutos.Business.Entities;
+using LHFD.CatalogoDeProdutos.Business.Interfaces;
+using LHFD.CatalogoDeProdutos.Data.Context;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
 
-namespace LHFD.ProductCatalog.Data.Repository
+namespace LHFD.CatalogoDeProdutos.Data.Repository
 {
-    public abstract class Repository<TEntity> : IRepository<TEntity> 
-        where TEntity : Entity, new()
+    public abstract class Repository<TEntity> : IRepository<TEntity> where TEntity : Entity, new()
     {
-        protected readonly ProductCatalogDbContext Db;
+        protected readonly CatalogoDeProdutosDbContext Db;
         protected readonly DbSet<TEntity> DbSet;
 
-        protected Repository(ProductCatalogDbContext db)
+        protected Repository(CatalogoDeProdutosDbContext context)
         {
-            Db = db;
-            DbSet = db.Set<TEntity>();
-        }
-
-        public async Task<IEnumerable<TEntity>> Get(Expression<Func<TEntity, bool>> predicate)
-        {
-            return await DbSet.AsNoTracking().Where(predicate).ToListAsync();
+            Db = context;
+            DbSet = context.Set<TEntity>();
         }
 
         public async Task<List<TEntity>> GetAll()

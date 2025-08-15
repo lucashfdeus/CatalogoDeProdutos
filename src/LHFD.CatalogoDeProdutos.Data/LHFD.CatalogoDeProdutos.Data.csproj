@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\LHFD.ProductCatalog.Business\LHFD.ProductCatalog.Business.csproj" />
+    <ProjectReference Include="..\LHFD.CatalogoDeProdutos.Business\LHFD.CatalogoDeProdutos.Business.csproj" />
   </ItemGroup>
 
 </Project>

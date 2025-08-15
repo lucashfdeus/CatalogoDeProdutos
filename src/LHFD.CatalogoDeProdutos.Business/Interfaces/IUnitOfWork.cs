@@ -1,4 +1,4 @@
-﻿namespace LHFD.ProductCatalog.Business.Interfaces
+﻿namespace LHFD.CatalogoDeProdutos.Business.Interfaces
 {
     public interface IUnitOfWork
     {
