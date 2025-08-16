@@ -31,14 +31,7 @@ namespace LHFD.CatalogoDeProdutos.Api.Controllers
         [HttpPost("nova-conta")]
         public async Task<IActionResult> Register(RegisterUserDto model)
         {
-            var user = new IdentityUser
-            {
-                UserName = model.Email,
-                Email = model.Email,
-                EmailConfirmed = true
-            };
-
-            var result = await _userManager.CreateAsync(user, model.Password);
+            var result = await _userManager.CreateAsync(MapUserIdentity(model), model.Password);
 
             if (!result.Succeeded)
                 return BadRequest(result.Errors);
@@ -57,6 +50,13 @@ namespace LHFD.CatalogoDeProdutos.Api.Controllers
             return Ok(await GenerateJwt(model.Email));
         }
 
+        private static IdentityUser MapUserIdentity(RegisterUserDto model) => new()
+        {
+            UserName = model.Email,
+            Email = model.Email,
+            EmailConfirmed = true
+        };
+
         private async Task<object> GenerateJwt(string email)
         {
             var user = await _userManager.FindByEmailAsync(email);
@@ -64,7 +64,7 @@ namespace LHFD.CatalogoDeProdutos.Api.Controllers
             if (user is null)
                 return Unauthorized("Usuário não encontrado");
 
-            if(string.IsNullOrEmpty(user.Email))
+            if (string.IsNullOrEmpty(user.Email))
                 return Unauthorized("Usuário não possui email associado");
 
             var key = Encoding.ASCII.GetBytes(_appSettings.Secret);
