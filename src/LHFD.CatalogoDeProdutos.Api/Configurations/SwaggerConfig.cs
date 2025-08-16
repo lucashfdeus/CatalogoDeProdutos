@@ -1,4 +1,5 @@
-﻿using Asp.Versioning.ApiExplorer;
+﻿using Asp.Versioning;
+using Asp.Versioning.ApiExplorer;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -9,6 +10,19 @@ namespace LHFD.CatalogoDeProdutos.Api.Configurations
     {
         public static IServiceCollection AddSwaggerConfig(this IServiceCollection services)
         {
+            services.AddApiVersioning(options =>
+            {
+                options.DefaultApiVersion = new ApiVersion(1, 0);
+                options.AssumeDefaultVersionWhenUnspecified = true;
+                options.ReportApiVersions = true;
+                options.ApiVersionReader = new UrlSegmentApiVersionReader();
+            })
+            .AddApiExplorer(options =>
+            {
+                options.GroupNameFormat = "'v'VVV";
+                options.SubstituteApiVersionInUrl = true;
+            });
+
             services.AddSwaggerGen(c =>
             {
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
@@ -74,7 +88,7 @@ namespace LHFD.CatalogoDeProdutos.Api.Configurations
             {
                 options.SwaggerDoc(description.GroupName, new OpenApiInfo
                 {
-                    Title = "API - Catalogo de Produtos",
+                    Title = "API - Catálogo de Produtos",
                     Version = description.ApiVersion.ToString()
                 });
             }

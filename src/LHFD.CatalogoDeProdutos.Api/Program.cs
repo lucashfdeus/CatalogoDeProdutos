@@ -15,20 +15,23 @@ builder.Services.AddDbContext<CatalogoDeProdutosDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddIdentityConfiguration(builder.Configuration);
 
+builder.Services.AddEndpointsApiExplorer();
+
+builder.Services.AddSwaggerConfig();
 builder.Services.AddApiConfig();
 builder.Services.ResolveDependencies();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseHttpsRedirection();
 
+app.UseRouting();
+app.UseAuthentication();
+app.UseAuthorization();
+
+app.UseSwaggerConfig();
 app.UseApiConfig(app.Environment);
 
 app.Run();

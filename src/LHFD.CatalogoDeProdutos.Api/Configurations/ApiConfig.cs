@@ -8,13 +8,11 @@ namespace LHFD.CatalogoDeProdutos.Api.Configurations
         {
             services.AddControllers();
 
-            // Ajuste para não retornar 400 automático em ModelState inválido
             services.Configure<ApiBehaviorOptions>(options =>
             {
                 options.SuppressModelStateInvalidFilter = true;
             });
 
-            // Configuração de CORS para desenvolvimento
             services.AddCors(options =>
             {
                 options.AddPolicy("Development", builder =>
