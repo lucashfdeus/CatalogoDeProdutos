@@ -11,6 +11,7 @@ namespace LHFD.CatalogoDeProdutos.Data.Context
             ChangeTracker.AutoDetectChangesEnabled = false;
         }
 
+        public DbSet<Departamento> Departamentos { get; set; }
         public DbSet<Produto> Produtos { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -21,11 +22,6 @@ namespace LHFD.CatalogoDeProdutos.Data.Context
                 property.SetColumnType("varchar(100)"); //Validação global para propriedades string
 
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(CatalogoDeProdutosDbContext).Assembly);
-
-            foreach (var relationship in modelBuilder.Model
-                .GetEntityTypes()
-                .SelectMany(e => e.GetForeignKeys()))
-                relationship.DeleteBehavior = DeleteBehavior.ClientSetNull; //Validação global para relacionamentos
 
             base.OnModelCreating(modelBuilder);
         }

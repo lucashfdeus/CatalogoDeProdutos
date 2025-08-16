@@ -2,11 +2,12 @@
 using LHFD.CatalogoDeProdutos.Business.Interfaces;
 using LHFD.CatalogoDeProdutos.Data.Context;
 
-
 namespace LHFD.CatalogoDeProdutos.Data.Repository
 {
-    public class ProdutoRepository : Repository<Produto>, IProdutoRepository
+    public class DepartamentoRepository : Repository<Departamento>, IDepartamentoRepository
     {
-        public ProdutoRepository(CatalogoDeProdutosDbContext context) : base(context) { }     
+        public DepartamentoRepository(CatalogoDeProdutosDbContext context) : base(context)
+        {
+        }
     }
 }

@@ -1,6 +1,1 @@
-@LHFD.ProductCatalog.Api_HostAddress = http://localhost:5014
-
-GET {{LHFD.ProductCatalog.Api_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
+@LHFD.ProductCatalog.Api_HostAddress = http://localhost:5001
