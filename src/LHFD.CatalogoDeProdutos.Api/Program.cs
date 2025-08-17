@@ -22,6 +22,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerConfig();
 builder.Services.AddApiConfig();
 builder.Services.ResolveDependencies();
+builder.Services.AddValidationConfiguration();
+builder.Services.AddAutoMapperConfiguration();
 
 var app = builder.Build();
 

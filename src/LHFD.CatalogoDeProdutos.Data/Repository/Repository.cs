@@ -2,53 +2,42 @@
 using LHFD.CatalogoDeProdutos.Business.Interfaces;
 using LHFD.CatalogoDeProdutos.Data.Context;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace LHFD.CatalogoDeProdutos.Data.Repository
 {
-    public abstract class Repository<TEntity> : IRepository<TEntity> where TEntity : Entity, new()
+    public abstract class Repository<TEntity>(CatalogoDeProdutosDbContext context) : IRepository<TEntity> where TEntity : Entity, new()
     {
-        protected readonly CatalogoDeProdutosDbContext Db;
-        protected readonly DbSet<TEntity> DbSet;
+        protected readonly CatalogoDeProdutosDbContext Db = context;
+        protected readonly DbSet<TEntity> DbSet = context.Set<TEntity>();
 
-        protected Repository(CatalogoDeProdutosDbContext context)
-        {
-            Db = context;
-            DbSet = context.Set<TEntity>();
-        }
-
-        public async Task<List<TEntity>> GetAll()
-        {
-            return await DbSet.ToListAsync();
-        }
-
-        public virtual async Task<TEntity?> GetById(Guid id)
-        {
-            return await DbSet.FindAsync(id);
-        }
-
-        public virtual void Create(TEntity entity)
+        public virtual async Task CreateAsync(TEntity entity)
         {
             DbSet.Add(entity);
+            await SaveChangesAsync();
         }
 
-        public virtual void Update(TEntity entity)
+        public virtual async Task UpdateAsync(TEntity entity)
         {
             DbSet.Update(entity);
+            await SaveChangesAsync();
         }
 
-        public virtual void Delete(Guid id)
+        public virtual async Task<TEntity?> GetByIdAsync(Guid id) => await DbSet.FindAsync(id);
+
+        public virtual async Task<List<TEntity>> GetAllAsync() => await DbSet.ToListAsync();        
+
+        public virtual async Task<IEnumerable<TEntity>> GetAsync(Expression<Func<TEntity, bool>> predicate)
+            => await DbSet.AsNoTracking().Where(predicate).ToListAsync();
+
+        public virtual async Task DeleteAsync(Guid id)
         {
             DbSet.Remove(new TEntity { Id = id });
+            await SaveChangesAsync();
         }
 
-        public async Task<int> SaveChanges()
-        {
-            return await Db.SaveChangesAsync();
-        }
+        public async Task<int> SaveChangesAsync() => await Db.SaveChangesAsync();        
 
-        public void Dispose()
-        {
-            Db.Dispose();
-        }
+        public void Dispose() => Db?.Dispose();
     }
 }

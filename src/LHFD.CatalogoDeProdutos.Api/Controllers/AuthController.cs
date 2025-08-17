@@ -1,6 +1,7 @@
 ﻿using Asp.Versioning;
 using LHFD.CatalogoDeProdutos.Api.Extensions;
 using LHFD.CatalogoDeProdutos.Business.Dtos;
+using LHFD.CatalogoDeProdutos.Business.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -14,14 +15,14 @@ namespace LHFD.CatalogoDeProdutos.Api.Controllers
     [ApiVersion("1.0")]
     public class AuthController : MainController
     {
-
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly AppSettings _appSettings;
 
-        public AuthController(UserManager<IdentityUser> userManager,
+        public AuthController(INotification notification,
+                              UserManager<IdentityUser> userManager,
                               SignInManager<IdentityUser> signInManager,
-                              IOptions<AppSettings> appSettings)
+                              IOptions<AppSettings> appSettings) : base(notification)
         {
             _userManager = userManager;
             _signInManager = signInManager;

@@ -27,8 +27,8 @@ namespace LHFD.CatalogoDeProdutos.Data.EfConfigurations
                    .IsRequired();
 
             builder.HasOne(p => p.Departamento)
-                   .WithMany()
-                   .HasForeignKey(p => p.DepartamentoId)
+                   .WithMany(p => p.Produtos)
+                   .HasForeignKey(p => p.IdDepartamento)
                    .OnDelete(DeleteBehavior.Restrict);
 
             builder.ToTable("Produtos");

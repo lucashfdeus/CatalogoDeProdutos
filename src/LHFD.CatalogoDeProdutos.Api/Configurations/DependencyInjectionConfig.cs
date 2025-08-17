@@ -1,7 +1,12 @@
-﻿using LHFD.CatalogoDeProdutos.Business.Interfaces;
+﻿using LHFD.CatalogoDeProdutos.Api.Extensions;
+using LHFD.CatalogoDeProdutos.Business.Interfaces;
+using LHFD.CatalogoDeProdutos.Business.Notification;
 using LHFD.CatalogoDeProdutos.Business.Services;
 using LHFD.CatalogoDeProdutos.Data.Context;
 using LHFD.CatalogoDeProdutos.Data.Repository;
+using LHFD.CatalogoDeProdutos.Data.UoW;
+using Microsoft.Extensions.Options;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace LHFD.CatalogoDeProdutos.Api.Configurations
 {
@@ -10,12 +15,17 @@ namespace LHFD.CatalogoDeProdutos.Api.Configurations
         public static IServiceCollection ResolveDependencies(this IServiceCollection services)
         {
             services.AddScoped<CatalogoDeProdutosDbContext>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             services.AddScoped<IDepartamentoRepository, DepartamentoRepository>();
             services.AddScoped<IProdutoRepository, ProdutoRepository>();
 
+            services.AddScoped<INotification, AppNotifier>();
             services.AddScoped<IDepartamentoService, DepartamentoService>();
+            services.AddScoped<IProdutoService, ProdutoService>();
 
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddScoped<IUser, AppUser>();
             return services;
         }
     }

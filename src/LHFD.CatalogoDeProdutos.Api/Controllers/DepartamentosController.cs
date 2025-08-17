@@ -6,19 +6,20 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LHFD.CatalogoDeProdutos.Api.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [ApiVersion("1.0")]
+    [Route("departamentos")]
     public class DepartamentosController : MainController
     {
         private readonly IDepartamentoService _departamentoService;
 
-        public DepartamentosController(IDepartamentoService departamentoService)
+        public DepartamentosController(INotification notification,
+                                       IDepartamentoService departamentoService) : base(notification)
         {
             _departamentoService = departamentoService;
         }
 
         [HttpGet]
-        [Route("departamentos")]
         public async Task<IEnumerable<DepartamentoDto>> GetAll()
         {
            return await _departamentoService.GetAllDepartamentosAsync();

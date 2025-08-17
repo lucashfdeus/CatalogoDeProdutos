@@ -24,12 +24,11 @@ namespace LHFD.CatalogoDeProdutos.Data.Migrations
 
             modelBuilder.Entity("LHFD.CatalogoDeProdutos.Business.Entities.Departamento", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("IdDepartamento")
                         .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Nome")
                         .IsRequired()
@@ -50,12 +49,12 @@ namespace LHFD.CatalogoDeProdutos.Data.Migrations
                         .IsRequired()
                         .HasColumnType("varchar(200)");
 
-                    b.Property<Guid>("DepartamentoId")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("Descricao")
                         .IsRequired()
                         .HasColumnType("varchar(1000)");
+
+                    b.Property<int>("IdDepartamento")
+                        .HasColumnType("integer");
 
                     b.Property<decimal>("Preco")
                         .HasColumnType("decimal(18,2)");
@@ -65,7 +64,7 @@ namespace LHFD.CatalogoDeProdutos.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DepartamentoId");
+                    b.HasIndex("IdDepartamento");
 
                     b.ToTable("Produtos", (string)null);
                 });
@@ -73,12 +72,17 @@ namespace LHFD.CatalogoDeProdutos.Data.Migrations
             modelBuilder.Entity("LHFD.CatalogoDeProdutos.Business.Entities.Produto", b =>
                 {
                     b.HasOne("LHFD.CatalogoDeProdutos.Business.Entities.Departamento", "Departamento")
-                        .WithMany()
-                        .HasForeignKey("DepartamentoId")
+                        .WithMany("Produtos")
+                        .HasForeignKey("IdDepartamento")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Departamento");
+                });
+
+            modelBuilder.Entity("LHFD.CatalogoDeProdutos.Business.Entities.Departamento", b =>
+                {
+                    b.Navigation("Produtos");
                 });
 #pragma warning restore 612, 618
         }

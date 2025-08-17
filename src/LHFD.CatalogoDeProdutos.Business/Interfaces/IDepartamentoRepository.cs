@@ -2,5 +2,9 @@
 
 namespace LHFD.CatalogoDeProdutos.Business.Interfaces
 {
-    public interface IDepartamentoRepository : IRepository<Departamento> { };
+    public interface IDepartamentoRepository
+    {
+        Task<List<Departamento>> GetAllAsync();
+        Task<Departamento?> GetByIdAsync(int id);
+    }
 }

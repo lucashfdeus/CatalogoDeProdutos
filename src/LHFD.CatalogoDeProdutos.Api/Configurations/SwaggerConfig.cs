@@ -51,6 +51,7 @@ namespace LHFD.CatalogoDeProdutos.Api.Configurations
             });
 
             services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
+
             return services;
         }
 

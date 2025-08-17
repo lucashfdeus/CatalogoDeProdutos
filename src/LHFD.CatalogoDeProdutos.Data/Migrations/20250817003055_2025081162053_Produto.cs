@@ -1,12 +1,13 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
 namespace LHFD.CatalogoDeProdutos.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class _202508142322_Inicial : Migration
+    public partial class _2025081162053_Produto : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -15,9 +16,9 @@ namespace LHFD.CatalogoDeProdutos.Data.Migrations
                 name: "Departamentos",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    IdDepartamento = table.Column<int>(type: "integer", nullable: false),
-                    Nome = table.Column<string>(type: "varchar(100)", nullable: false)
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Nome = table.Column<string>(type: "varchar(255)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -31,24 +32,25 @@ namespace LHFD.CatalogoDeProdutos.Data.Migrations
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Codigo = table.Column<string>(type: "varchar(200)", nullable: false),
                     Descricao = table.Column<string>(type: "varchar(1000)", nullable: false),
+                    IdDepartamento = table.Column<int>(type: "integer", nullable: false),
                     Preco = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
-                    Status = table.Column<bool>(type: "boolean", nullable: false),
-                    DepartamentoId = table.Column<Guid>(type: "uuid", nullable: false)
+                    Status = table.Column<bool>(type: "boolean", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Produtos", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Produtos_Departamentos_DepartamentoId",
-                        column: x => x.DepartamentoId,
+                        name: "FK_Produtos_Departamentos_IdDepartamento",
+                        column: x => x.IdDepartamento,
                         principalTable: "Departamentos",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Produtos_DepartamentoId",
+                name: "IX_Produtos_IdDepartamento",
                 table: "Produtos",
-                column: "DepartamentoId");
+                column: "IdDepartamento");
         }
 
         /// <inheritdoc />
