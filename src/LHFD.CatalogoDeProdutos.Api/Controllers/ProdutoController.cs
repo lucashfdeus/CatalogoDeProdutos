@@ -76,13 +76,18 @@ namespace LHFD.CatalogoDeProdutos.Api.Controllers
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var response = new
+            var response = await _productService.DeleteProduct(id);
+
+            if (response == false)            
+                return CustomResponse(response);            
+
+            var successResponse = new
             {
-                Success = await _productService.DeleteProduct(id),
+                Success = response,
                 Message = "Produto apagado com sucesso."
             };
 
-            return CustomResponse(response);
+            return CustomResponse(successResponse);
         }
     }
 }
