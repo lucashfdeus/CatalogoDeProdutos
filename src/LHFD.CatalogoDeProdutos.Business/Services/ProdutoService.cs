@@ -2,7 +2,9 @@
 using LHFD.CatalogoDeProdutos.Business.Dtos;
 using LHFD.CatalogoDeProdutos.Business.Dtos.Response;
 using LHFD.CatalogoDeProdutos.Business.Entities;
+using LHFD.CatalogoDeProdutos.Business.Events;
 using LHFD.CatalogoDeProdutos.Business.Interfaces;
+using MassTransit;
 
 namespace LHFD.CatalogoDeProdutos.Business.Services
 {
@@ -10,13 +12,16 @@ namespace LHFD.CatalogoDeProdutos.Business.Services
     {
         private readonly IMapper _mapper;
         private readonly IProdutoRepository _productRepository;
+        private readonly IPublishEndpoint _publishEndpoint;
 
         public ProdutoService(INotification notification, IUnitOfWork uow,
                               IMapper mapper,
-                              IProdutoRepository productRepository) : base(notification, uow)
+                              IProdutoRepository productRepository,
+                              IPublishEndpoint publishEndpoint) : base(notification, uow)
         {
             _mapper = mapper;
             _productRepository = productRepository;
+            _publishEndpoint = publishEndpoint;
         }
 
         public async Task CreateProduct(ProdutoRequestDto model)
@@ -33,7 +38,15 @@ namespace LHFD.CatalogoDeProdutos.Business.Services
                 return;
             }
 
-            await _productRepository.CreateAsync(produto);
+            if (await _productRepository.CreateAsync(produto))
+            {
+                await _publishEndpoint.Publish<IProdutoCriadoEvent>(new
+                {
+                    produto.Id,
+                    produto.Descricao,
+                    produto.Preco
+                });
+            }
         }
 
         public async Task UpdateProduct(ProdutoRequestDto model)
@@ -60,6 +73,14 @@ namespace LHFD.CatalogoDeProdutos.Business.Services
                 Notify("Produto não encontrado.");
                 return new();
             }
+
+            //Apenas para teste do evento.
+            await _publishEndpoint.Publish<IProdutoCriadoEvent>(new
+            {
+                produto.Id,
+                produto.Descricao,
+                produto.Preco
+            });
 
             return _mapper.Map<ProdutoResponseDto>(produto);
         }

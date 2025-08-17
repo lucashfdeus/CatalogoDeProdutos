@@ -5,7 +5,7 @@ namespace LHFD.CatalogoDeProdutos.Business.Interfaces
 {
     public interface IRepository<TEntity> : IDisposable where TEntity : Entity
     {
-        Task CreateAsync(TEntity entity);
+        Task<bool> CreateAsync(TEntity entity);
         Task UpdateAsync(TEntity entity);
         Task<TEntity?> GetByIdAsync(Guid id);
         Task<List<TEntity>> GetAllAsync();

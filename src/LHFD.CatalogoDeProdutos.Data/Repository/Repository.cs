@@ -11,10 +11,10 @@ namespace LHFD.CatalogoDeProdutos.Data.Repository
         protected readonly CatalogoDeProdutosDbContext Db = context;
         protected readonly DbSet<TEntity> DbSet = context.Set<TEntity>();
 
-        public virtual async Task CreateAsync(TEntity entity)
+        public virtual async Task<bool> CreateAsync(TEntity entity)
         {
             DbSet.Add(entity);
-            await SaveChangesAsync();
+            return await SaveChangesAsync() > 0;
         }
 
         public virtual async Task UpdateAsync(TEntity entity)

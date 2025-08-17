@@ -24,6 +24,7 @@ builder.Services.AddApiConfig();
 builder.Services.ResolveDependencies();
 builder.Services.AddValidationConfiguration();
 builder.Services.AddAutoMapperConfiguration();
+builder.Services.AddMassTransitConfiguration();
 
 var app = builder.Build();
 

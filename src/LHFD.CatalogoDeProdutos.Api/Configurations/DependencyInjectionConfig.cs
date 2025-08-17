@@ -1,12 +1,12 @@
 ﻿using LHFD.CatalogoDeProdutos.Api.Extensions;
 using LHFD.CatalogoDeProdutos.Business.Interfaces;
+using LHFD.CatalogoDeProdutos.Business.Interfaces.Events;
 using LHFD.CatalogoDeProdutos.Business.Notification;
 using LHFD.CatalogoDeProdutos.Business.Services;
 using LHFD.CatalogoDeProdutos.Data.Context;
+using LHFD.CatalogoDeProdutos.Data.Messaging;
 using LHFD.CatalogoDeProdutos.Data.Repository;
 using LHFD.CatalogoDeProdutos.Data.UoW;
-using Microsoft.Extensions.Options;
-using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace LHFD.CatalogoDeProdutos.Api.Configurations
 {
@@ -26,6 +26,9 @@ namespace LHFD.CatalogoDeProdutos.Api.Configurations
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddScoped<IUser, AppUser>();
+
+            services.AddScoped<IProdutoEventPublisher, ProdutoEventPublisher>();
+
             return services;
         }
     }
