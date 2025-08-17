@@ -1,4 +1,7 @@
-﻿using MassTransit;
+﻿using LHFD.CatalogoDeProdutos.Business.Events;
+using LHFD.CatalogoDeProdutos.Business.Interfaces.Events;
+using LHFD.CatalogoDeProdutos.Data.Messaging;
+using MassTransit;
 
 namespace LHFD.CatalogoDeProdutos.Api.Configurations
 {
@@ -7,7 +10,7 @@ namespace LHFD.CatalogoDeProdutos.Api.Configurations
         public static IServiceCollection AddMassTransitConfiguration(this IServiceCollection services)
         {
             services.AddMassTransit(x =>
-            {
+            {               
                 x.UsingRabbitMq((context, cfg) =>
                 {
                     cfg.Host("localhost", "/", h =>
@@ -17,6 +20,8 @@ namespace LHFD.CatalogoDeProdutos.Api.Configurations
                     });
                 });
             });
+
+            services.AddScoped<IProdutoEventPublisher, ProdutoEventPublisher>();
 
             return services;
         }

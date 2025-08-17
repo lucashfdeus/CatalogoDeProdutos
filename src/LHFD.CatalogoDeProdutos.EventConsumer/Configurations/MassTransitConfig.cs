@@ -20,10 +20,12 @@ namespace LHFD.CatalogoDeProdutos.EventConsumer.Configurations
                         h.Password("guest");
                     });
 
-                    cfg.ReceiveEndpoint(nameof(IProdutoCriadoEvent), e =>
+                    cfg.ReceiveEndpoint("produtos-criados-consumer-queue", e =>
                     {
                         e.ConfigureConsumer<ProdutoCriadoConsumer>(context);
+                        e.Bind<IProdutoCriadoEvent>();
                     });
+
                 });
             });
 
