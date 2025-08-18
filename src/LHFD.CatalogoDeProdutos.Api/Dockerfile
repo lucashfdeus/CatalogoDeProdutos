@@ -2,20 +2,19 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Copy csproj files and restore as distinct layers
-COPY ["src/LHFD.CatalogoDeProdutos.Api/LHFD.CatalogoDeProdutos.Api.csproj", "src/LHFD.CatalogoDeProdutos.Api/"]
-COPY ["src/LHFD.CatalogoDeProdutos.Data/LHFD.CatalogoDeProdutos.Data.csproj", "src/LHFD.CatalogoDeProdutos.Data/"]
-COPY ["src/LHFD.CatalogoDeProdutos.Business/LHFD.CatalogoDeProdutos.Business.csproj", "src/LHFD.CatalogoDeProdutos.Business/"]
-RUN dotnet restore "src/LHFD.CatalogoDeProdutos.Api/LHFD.CatalogoDeProdutos.Api.csproj"
+COPY LHFD.CatalogoDeProdutos.Api/*.csproj LHFD.CatalogoDeProdutos.Api/
+COPY LHFD.CatalogoDeProdutos.Data/*.csproj LHFD.CatalogoDeProdutos.Data/
+COPY LHFD.CatalogoDeProdutos.Business/*.csproj LHFD.CatalogoDeProdutos.Business/
 
-# Copy everything else and build
+RUN dotnet restore LHFD.CatalogoDeProdutos.Api/LHFD.CatalogoDeProdutos.Api.csproj
+
 COPY . .
-WORKDIR "/src/LHFD.CatalogoDeProdutos.Api"
-RUN dotnet build "LHFD.CatalogoDeProdutos.Api.csproj" -c Release -o /app/build
+WORKDIR /src/LHFD.CatalogoDeProdutos.Api
+RUN dotnet build LHFD.CatalogoDeProdutos.Api.csproj -c Release -o /app/build
 
 # Publish stage
 FROM build AS publish
-RUN dotnet publish "LHFD.CatalogoDeProdutos.Api.csproj" -c Release -o /app/publish
+RUN dotnet publish LHFD.CatalogoDeProdutos.Api.csproj -c Release -o /app/publish
 
 # Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:8.0

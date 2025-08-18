@@ -1,33 +1,60 @@
 version: '3.8'
+
 services:
-  catalogo-api:
+  lhfd.catalogodeprodutos.api:
     build:
-      context: .
-      dockerfile: Dockerfile.api
+      context: ./src
+      dockerfile: LHFD.CatalogoDeProdutos.Api/Dockerfile
     ports:
-    - 8080:8080
+      - 8080:8080
     depends_on:
-    - rabbitmq
+      - rabbitmq
+      - postgres
     networks:
-    - lhfd-network
+      - lhfd-network
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=CatalogoDeProdutos;Username=postgres;Password=produto
+
   event-consumer:
     build:
-      context: .
-      dockerfile: Dockerfile.consumer
+      context: ./src
+      dockerfile: LHFD.CatalogoDeProdutos.EventConsumer/Dockerfile
     depends_on:
-    - rabbitmq
+      - rabbitmq
+      - postgres
     networks:
-    - lhfd-network
+      - lhfd-network
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=CatalogoDeProdutos;Username=postgres;Password=produto
+
   rabbitmq:
     image: rabbitmq:3-management
     ports:
-    - 5672:5672
-    - 15672:15672
+      - 5672:5672
+      - 15672:15672
     networks:
-    - lhfd-network
+      - lhfd-network
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
+
+  postgres:
+    image: postgres:15
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_DB: CatalogoDeProdutos
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: produto
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - lhfd-network
+
+volumes:
+  pgdata:
+
 networks:
   lhfd-network:
     driver: bridge

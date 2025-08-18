@@ -8,14 +8,17 @@ namespace LHFD.CatalogoDeProdutos.Api.Configurations
     {
         public static IServiceCollection AddMassTransitConfiguration(this IServiceCollection services, IConfiguration configuration)
         {
+            var rabbitMqConfig = configuration.GetSection("RabbitMQ");
+
             services.AddMassTransit(x =>
             {
                 x.UsingRabbitMq((context, cfg) =>
                 {
-                    cfg.Host(configuration["RabbitMQ:HostName"], "/", h =>
+
+                    cfg.Host(rabbitMqConfig["HostName"], "/", h =>
                     {
-                        h.Username(configuration["RabbitMQ:UserName"] ?? string.Empty);
-                        h.Password(configuration["RabbitMQ:Password"] ?? string.Empty);
+                        h.Username(rabbitMqConfig["UserName"] ?? string.Empty);
+                        h.Password(rabbitMqConfig["Password"] ?? string.Empty);
                     });
                 });
             });
