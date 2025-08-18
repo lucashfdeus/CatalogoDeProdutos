@@ -3,9 +3,16 @@ import { Component } from '@angular/core';
 @Component({
   standalone: true,
   selector: 'app-footer',
-  template: `<div class="layout-footer">
-        SAKAI by
-        <a href="https://primeng.org" target="_blank" rel="noopener noreferrer" class="text-primary font-bold hover:underline">PrimeNG</a>
-    </div>`
+  template: `
+    <div class="layout-footer">
+      by Lucas Henrique
+      <a href="https://github.com/lucashfdeus" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">
+        <i class="pi pi-github"></i>
+      </a>
+      <a href="https://www.linkedin.com/in/lucashfdeus/" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline ml-2">
+        <i class="pi pi-linkedin"></i>
+      </a>
+    </div>
+  `
 })
 export class AppFooter {}
