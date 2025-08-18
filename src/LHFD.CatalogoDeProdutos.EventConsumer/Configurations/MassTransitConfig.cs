@@ -6,18 +6,20 @@ namespace LHFD.CatalogoDeProdutos.EventConsumer.Configurations
 {
     public static class MassTransitConfig
     {
-        public static IServiceCollection AddMassTransitConfiguration(this IServiceCollection services)
+        public static IServiceCollection AddMassTransitConfiguration(this IServiceCollection services, IConfiguration configuration)
         {
+            var rabbitMqConfig = configuration.GetSection("RabbitMQ");
+
             services.AddMassTransit(x =>
             {
                 x.AddConsumer<ProdutoCriadoConsumer>();
 
                 x.UsingRabbitMq((context, cfg) =>
                 {
-                    cfg.Host("localhost", "/", h =>
+                    cfg.Host(rabbitMqConfig["HostName"], "/", h =>
                     {
-                        h.Username("guest");
-                        h.Password("guest");
+                        h.Username(rabbitMqConfig["UserName"] ?? string.Empty);
+                        h.Password(rabbitMqConfig["Password"] ?? string.Empty);
                     });
 
                     cfg.ReceiveEndpoint("produtos-criados-consumer-queue", e =>
@@ -25,6 +27,9 @@ namespace LHFD.CatalogoDeProdutos.EventConsumer.Configurations
                         e.ConfigureConsumer<ProdutoCriadoConsumer>(context);
                         e.Bind<IProdutoCriadoEvent>();
                     });
+
+                    cfg.ConfigureEndpoints(context);
+                    cfg.UseMessageRetry(r => r.Interval(5, TimeSpan.FromSeconds(5)));
 
                 });
             });

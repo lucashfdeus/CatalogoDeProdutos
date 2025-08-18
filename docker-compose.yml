@@ -1,0 +1,33 @@
+version: '3.8'
+services:
+  catalogo-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    ports:
+    - 8080:8080
+    depends_on:
+    - rabbitmq
+    networks:
+    - lhfd-network
+  event-consumer:
+    build:
+      context: .
+      dockerfile: Dockerfile.consumer
+    depends_on:
+    - rabbitmq
+    networks:
+    - lhfd-network
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+    - 5672:5672
+    - 15672:15672
+    networks:
+    - lhfd-network
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+networks:
+  lhfd-network:
+    driver: bridge
