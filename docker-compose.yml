@@ -6,7 +6,7 @@ services:
       context: ./src
       dockerfile: LHFD.CatalogoDeProdutos.Api/Dockerfile
     ports:
-      - 8080:8080
+      - 5001:5001
     depends_on:
       - rabbitmq
       - postgres

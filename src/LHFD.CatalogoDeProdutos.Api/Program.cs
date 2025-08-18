@@ -1,6 +1,5 @@
 using LHFD.CatalogoDeProdutos.Api.Configurations;
 using LHFD.CatalogoDeProdutos.Data.Context;
-using MassTransit;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -27,7 +26,6 @@ builder.Services.AddValidationConfiguration();
 builder.Services.AddAutoMapperConfiguration();
 builder.Services.AddMassTransitConfiguration(builder.Configuration);
 
-
 var app = builder.Build();
 
 app.UseHttpsRedirection();
@@ -39,10 +37,6 @@ app.UseAuthorization();
 app.UseSwaggerConfig();
 app.UseApiConfig(app.Environment);
 
-using (var scope = app.Services.CreateScope())
-{
-    var dbContext = scope.ServiceProvider.GetRequiredService<CatalogoDeProdutosDbContext>();
-    dbContext.Database.Migrate();
-}
+app.ApplyMigrations();
 
 app.Run();
