@@ -7,6 +7,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { RippleModule } from 'primeng/ripple';
 import { AppFloatingConfigurator } from '../../layout/component/app.floatingconfigurator';
+import { AuthService } from '../service/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -71,16 +72,20 @@ import { AppFloatingConfigurator } from '../../layout/component/app.floatingconf
     `
 })
 export class Login {
-
-  constructor(private router: Router) {  }
-
-  submit(){
-    this.router.navigate(['teste']);
-  }
-
+  constructor(private router: Router, private authService: AuthService) { }
   email: string = '';
-
   password: string = '';
-
   checked: boolean = false;
+
+  submit() {
+    this.authService.login(this.email, this.password).subscribe(
+      {
+        next: (loginResponse) => {
+          if (loginResponse !== null) {
+            this.router.navigate(['home']);
+          }
+        }
+      }
+    );
+  }
 }
