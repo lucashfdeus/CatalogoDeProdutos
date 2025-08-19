@@ -91,7 +91,7 @@ Aplicação desenvolvida com Angular, utilizando SCSS, componentes standalone e 
 
 4. Caso não consiga rodar automaticamente, rodar manualmente
 
-**Para Identity (ApplicationDbContext):**
+**Para Identity (`ApplicationDbContext`):**
 
 ```bash
 # Navegar até a pasta do projeto API
@@ -102,4 +102,15 @@ dotnet ef migrations add _Inicial -c ApplicationDbContext
 
 # Aplicar a migration
 dotnet ef database update -c ApplicationDbContext
-  
+```
+**Para Produtos (`CatalogoDeProdutosDbContext`):**
+```bash
+# Navegar até o projeto de Data
+cd LHFD.CatalogoDeProdutos.Data
+
+# Criar a migration inicial
+dotnet ef migrations add _Inicial -c CatalogoDeProdutosDbContext
+
+# Aplicar a migration
+dotnet ef database update -c CatalogoDeProdutosDbContext
+
