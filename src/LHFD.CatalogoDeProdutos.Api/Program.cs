@@ -4,11 +4,10 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Configuration
-    .SetBasePath(builder.Environment.ContentRootPath)
-    .AddJsonFile("appsettings.json", true, true)
-    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", true, true)
-    .AddEnvironmentVariables();
+if (builder.Environment.IsDevelopment())
+{
+    builder.WebHost.UseUrls("https://localhost:5003", "http://localhost:5004");
+}
 
 builder.Services.AddDbContext<CatalogoDeProdutosDbContext>(options =>
 {
@@ -16,9 +15,7 @@ builder.Services.AddDbContext<CatalogoDeProdutosDbContext>(options =>
 });
 
 builder.Services.AddIdentityConfiguration(builder.Configuration);
-
 builder.Services.AddEndpointsApiExplorer();
-
 builder.Services.AddSwaggerConfig();
 builder.Services.AddApiConfig();
 builder.Services.ResolveDependencies();
@@ -29,7 +26,6 @@ builder.Services.AddMassTransitConfiguration(builder.Configuration);
 var app = builder.Build();
 
 app.UseHttpsRedirection();
-
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
