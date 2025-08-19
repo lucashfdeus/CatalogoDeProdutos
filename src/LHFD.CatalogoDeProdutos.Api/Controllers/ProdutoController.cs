@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LHFD.CatalogoDeProdutos.Api.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [ApiVersion("1.0")]
     [Route("produtos")]
     public class ProdutoController : MainController

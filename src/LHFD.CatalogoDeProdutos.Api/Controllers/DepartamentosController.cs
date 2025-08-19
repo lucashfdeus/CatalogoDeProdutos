@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace LHFD.CatalogoDeProdutos.Api.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [ApiVersion("1.0")]
     [Route("departamentos")]
     public class DepartamentosController : MainController
