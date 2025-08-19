@@ -12,7 +12,7 @@ export class AuthGuard implements CanActivate {
 
   canActivate(): boolean | UrlTree {
     if (this.authService.isAuthenticated()) {
-      return true;
+      return true
     }
 
     return this.router.createUrlTree(['/auth/access'], {

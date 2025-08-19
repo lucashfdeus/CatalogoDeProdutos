@@ -1,3 +1,5 @@
+import { ToastModule } from 'primeng/toast';
+import { MessageModule } from 'primeng/message';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {Router, RouterModule} from '@angular/router';
@@ -21,7 +23,9 @@ import { MessageService } from 'primeng/api';
             FormsModule,
             RouterModule,
             RippleModule,
-            AppFloatingConfigurator],
+    ToastModule,
+    AppFloatingConfigurator,
+    MessageModule],
   providers: [MessageService],
   template: `
         <app-floating-configurator />
@@ -65,8 +69,8 @@ import { MessageService } from 'primeng/api';
                                 </div>
                                 <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary">Esqueceu a senha?</span>
                             </div>
-                                <p-button label="Sign In" styleClass="w-full" type="button" (click)="submit()">
-                          </p-button>
+                            <p-button label="Sign In" styleClass="w-full" type="button" (click)="submit()"></p-button>
+                            <p-toast></p-toast>
                         </div>
                     </div>
                 </div>
@@ -127,12 +131,8 @@ export class Login implements OnInit, OnDestroy {
   private handleLoginError(error: any): void {
     this.isLoading = false;
 
-    if (error.status !== 401) {
-      const errorMessage = error?.message || 'Erro ao realizar login. Tente novamente.';
-      this.showError(errorMessage);
-    } else {
-      this.showError(error.message);
-    }
+    const errorMessage = error?.message || 'Erro ao realizar login. Tente novamente.';
+    this.showError(errorMessage);
   }
 
   private showWarning(message: string): void {

@@ -3,6 +3,13 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "type": "chrome",
+      "request": "launch",
+      "name": "Ionic serve debug",
+      "url": "http://localhost:8100",
+      "webRoot": "${workspaceFolder}/src"
+    },
+    {
       "name": "ng serve",
       "type": "chrome",
       "request": "launch",
