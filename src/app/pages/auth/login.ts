@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {Router, RouterModule} from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -8,6 +8,8 @@ import { PasswordModule } from 'primeng/password';
 import { RippleModule } from 'primeng/ripple';
 import { AppFloatingConfigurator } from '../../layout/component/app.floatingconfigurator';
 import { AuthService } from '../service/auth.service';
+import { Subscription } from 'rxjs';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-login',
@@ -20,6 +22,7 @@ import { AuthService } from '../service/auth.service';
             RouterModule,
             RippleModule,
             AppFloatingConfigurator],
+  providers: [MessageService],
   template: `
         <app-floating-configurator />
         <div class="bg-surface-50 dark:bg-surface-950 flex items-center justify-center min-h-screen min-w-screen overflow-hidden">
@@ -57,7 +60,7 @@ import { AuthService } from '../service/auth.service';
 
                             <div class="flex items-center justify-between mt-2 mb-8 gap-8">
                                 <div class="flex items-center">
-                                    <p-checkbox [(ngModel)]="checked" id="rememberme1" binary class="mr-2"></p-checkbox>
+                                    <p-checkbox [(ngModel)]="rememberMe" id="rememberme1" binary class="mr-2"></p-checkbox>
                                     <label for="rememberme1">Lembrar senha</label>
                                 </div>
                                 <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary">Esqueceu a senha?</span>
@@ -71,21 +74,80 @@ import { AuthService } from '../service/auth.service';
         </div>
     `
 })
-export class Login {
-  constructor(private router: Router, private authService: AuthService) { }
+export class Login implements OnDestroy {
   email: string = '';
   password: string = '';
-  checked: boolean = false;
+  rememberMe: boolean = false;
+  isLoading: boolean = false;
 
-  submit() {
-    this.authService.login(this.email, this.password).subscribe(
-      {
-        next: (loginResponse) => {
-          if (loginResponse !== null) {
-            this.router.navigate(['home']);
-          }
-        }
-      }
-    );
+  private subscriptions: Subscription = new Subscription();
+
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    private messageService: MessageService
+  ) { }
+
+  submit(): void {
+    if (this.isFormInvalid()) {
+      this.showWarning('Por favor, preencha todos os campos obrigatórios');
+      return;
+    }
+
+    this.isLoading = true;
+
+    const loginSub = this.authService.login(this.email, this.password)
+      .subscribe({
+        next: (response) => this.handleLoginSuccess(response),
+        error: (error) => this.handleLoginError(error)
+      });
+
+    this.subscriptions.add(loginSub);
+  }
+
+  private isFormInvalid(): boolean {
+    return !this.email || !this.password;
+  }
+
+  private handleLoginSuccess(response: any): void {
+    this.isLoading = false;
+
+    if (this.rememberMe) {
+      this.storeCredentials();
+    }
+
+    this.router.navigate(['/home']);
+  }
+
+  private handleLoginError(error: any): void {
+    this.isLoading = false;
+    const errorMessage = error?.message || 'Erro ao realizar login. Tente novamente.';
+    this.showError(errorMessage);
+  }
+
+  private storeCredentials(): void {
+    localStorage.setItem('rememberedEmail', this.email);
+  }
+
+  private showWarning(message: string): void {
+    this.messageService.add({
+      severity: 'warn',
+      summary: 'Atenção',
+      detail: message,
+      life: 5000
+    });
+  }
+
+  private showError(message: string): void {
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Erro',
+      detail: message,
+      life: 5000
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
   }
 }
