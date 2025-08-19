@@ -89,7 +89,7 @@ Aplicação desenvolvida com Angular, utilizando SCSS, componentes standalone e 
    http://localhost:4200
    ou h + o
 
-4. Caso não consiga rodar automaticamente, rodar manualmente
+4. Caso não consiga rodar automaticamente as migrations, rodar manualmente
 
 **Para Identity (`ApplicationDbContext`):**
 
