@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using System.Text.Json;
 
 namespace LHFD.CatalogoDeProdutos.Api.Configurations
 {
@@ -6,7 +8,13 @@ namespace LHFD.CatalogoDeProdutos.Api.Configurations
     {
         public static IServiceCollection AddApiConfig(this IServiceCollection services)
         {
-            services.AddControllers();
+            services.AddControllers()
+               .AddJsonOptions(options =>
+               {
+                   options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                   options.JsonSerializerOptions.WriteIndented = true;
+                   options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+               });
 
             services.Configure<ApiBehaviorOptions>(options =>
             {
