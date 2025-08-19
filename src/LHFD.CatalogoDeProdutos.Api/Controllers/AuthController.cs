@@ -46,7 +46,11 @@ namespace LHFD.CatalogoDeProdutos.Api.Controllers
             var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, false, true);
 
             if (!result.Succeeded)
-                return Unauthorized("Usuário ou senha inválidos");
+                return Unauthorized(new ProblemDetails
+                {
+                    Status = StatusCodes.Status401Unauthorized,
+                    Title = "Usuário ou senha inválidos"
+                });
 
             return Ok(await GenerateJwt(model.Email));
         }
