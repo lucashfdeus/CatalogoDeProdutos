@@ -89,5 +89,17 @@ Aplicação desenvolvida com Angular, utilizando SCSS, componentes standalone e 
    http://localhost:4200
    ou h + o
 
+4. Caso não consiga rodar automaticamente, rodar manualmente
 
+**Para Identity (ApplicationDbContext):**
+
+```bash
+# Navegar até a pasta do projeto API
+cd LHFD.CatalogoDeProdutos.Api
+
+# Criar a migration inicial
+dotnet ef migrations add _Inicial -c ApplicationDbContext
+
+# Aplicar a migration
+dotnet ef database update -c ApplicationDbContext
   
