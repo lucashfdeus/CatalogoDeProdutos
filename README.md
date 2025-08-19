@@ -39,7 +39,7 @@ Sistema de catálogo de produtos com arquitetura em camadas, mensageria com Rabb
 
 ### Passo a Passo
 
-1. **Clone o repositório**
+1. **Clone o repositório Branch Main**
    ```bash
    [git clone https://github.com/seu-usuario/LHFD.CatalogoDeProdutos.git](https://github.com/lucashfdeus/CatalogoDeProdutos.git)
    cd CatalogoDeProdutos\backend
