@@ -16,17 +16,17 @@ export class AuthService {
   login(email: string, password: string): Observable<any> {
     return this.http.post(`${environment.apiUrl}/login`, { email, password }).pipe(
       tap((response: any) => {
-        // Armazena o token se a resposta for bem-sucedida
         if (response.token) {
           localStorage.setItem(this.TOKEN_KEY, response.token);
         }
       }),
       catchError((error: HttpErrorResponse) => {
-        // Formata o erro para ser tratado pelo componente
+        if (error.status === 401) {
+          this.router.navigate(['/auth/access']);
+        }
+
         return throwError(() => ({
-          message: error.error?.message ||
-            error.error?.error ||
-            'Erro durante o login',
+          message: error.error?.message || 'Erro durante o login',
           status: error.status
         }));
       })

@@ -21,13 +21,10 @@ import { CommonModule } from '@angular/common';
                             <h1 class="text-surface-900 dark:text-surface-0 font-bold text-4xl lg:text-5xl mb-2">
                                 {{ status === 401 ? 'Falha na Autenticação' : 'Acesso Negado' }}
                             </h1>
-
-                            <!-- Mensagem de erro da API -->
-                            <div *ngIf="error" class="text-red-500 dark:text-red-400 text-center max-w-md">
-                                {{ error }}
+                            <div *ngIf="errorMessage" class="error-message">
+                              {{ errorMessage }}
                             </div>
-
-                            <span *ngIf="!error" class="text-muted-color mb-8">
+                            <span *ngIf="!errorMessage" class="text-muted-color mb-8">
                                 Por favor, entre em contato com os administradores.
                             </span>
 
@@ -46,19 +43,18 @@ import { CommonModule } from '@angular/common';
         </div>`
 })
 export class Access {
-  error: string | null = null;
+  errorMessage: string | null = null;
   status: number | null = null;
   email: string | null = null;
 
   constructor(private router: Router) {
     const navigation = this.router.getCurrentNavigation();
     const state = navigation?.extras?.state as {
-      error: string;
+      errorMessage: string;
       status: number;
       email?: string;
     };
-
-    this.error = state?.error || null;
+    this.errorMessage = state?.errorMessage || null;
     this.status = state?.status || null;
     this.email = state?.email || null;
   }
@@ -66,7 +62,7 @@ export class Access {
   navigateToLogin(): void {
     this.router.navigate(['/auth/login'], {
       state: {
-        preservedError: this.error,
+        preservedError: this.errorMessage,
         email: this.email
       }
     });

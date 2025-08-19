@@ -1,4 +1,4 @@
-import { Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import {Router, RouterModule} from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -53,7 +53,7 @@ import { MessageService } from 'primeng/api';
 
                         <div>
                             <label for="email1" class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">Email</label>
-                            <input pInputText id="email1" type="text" placeholder="Email address" class="w-full md:w-120 mb-8" [(ngModel)]="email" />
+                            <input pInputText id="email1" type="text" placeholder="Email" class="w-full md:w-120 mb-8" [(ngModel)]="email" />
 
                             <label for="password1" class="block text-surface-900 dark:text-surface-0 font-medium text-xl mb-2">Password</label>
                             <p-password id="password1" [(ngModel)]="password" placeholder="Password" [toggleMask]="true" styleClass="mb-4" [fluid]="true" [feedback]="false"></p-password>
@@ -61,7 +61,7 @@ import { MessageService } from 'primeng/api';
                             <div class="flex items-center justify-between mt-2 mb-8 gap-8">
                                 <div class="flex items-center">
                                     <p-checkbox [(ngModel)]="rememberMe" id="rememberme1" binary class="mr-2"></p-checkbox>
-                                    <label for="rememberme1">Lembrar senha</label>
+                                    <label for="rememberme1">Lembrar-me</label>
                                 </div>
                                 <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary">Esqueceu a senha?</span>
                             </div>
@@ -74,13 +74,13 @@ import { MessageService } from 'primeng/api';
         </div>
     `
 })
-export class Login implements OnDestroy {
+export class Login implements OnInit, OnDestroy {
   email: string = '';
   password: string = '';
   rememberMe: boolean = false;
   isLoading: boolean = false;
 
-  private subscriptions: Subscription = new Subscription();
+  private subscriptions = new Subscription();
 
   constructor(
     private authService: AuthService,
@@ -88,13 +88,27 @@ export class Login implements OnDestroy {
     private messageService: MessageService
   ) { }
 
+  ngOnInit(): void {
+    const savedEmail = localStorage.getItem('rememberedEmail');
+    if (savedEmail) {
+      this.email = savedEmail;
+      this.rememberMe = true;
+    }
+  }
+
   submit(): void {
-    if (this.isFormInvalid()) {
+    if (!this.email || !this.password) {
       this.showWarning('Por favor, preencha todos os campos obrigatórios');
       return;
     }
 
     this.isLoading = true;
+
+    if (this.rememberMe) {
+      localStorage.setItem('rememberedEmail', this.email);
+    } else {
+      localStorage.removeItem('rememberedEmail');
+    }
 
     const loginSub = this.authService.login(this.email, this.password)
       .subscribe({
@@ -105,28 +119,18 @@ export class Login implements OnDestroy {
     this.subscriptions.add(loginSub);
   }
 
-  private isFormInvalid(): boolean {
-    return !this.email || !this.password;
-  }
-
   private handleLoginSuccess(response: any): void {
     this.isLoading = false;
-
-    if (this.rememberMe) {
-      this.storeCredentials();
-    }
-
     this.router.navigate(['/home']);
   }
 
   private handleLoginError(error: any): void {
     this.isLoading = false;
-    const errorMessage = error?.message || 'Erro ao realizar login. Tente novamente.';
-    this.showError(errorMessage);
-  }
 
-  private storeCredentials(): void {
-    localStorage.setItem('rememberedEmail', this.email);
+    if (error.status !== 401) {
+      const errorMessage = error?.message || 'Erro ao realizar login. Tente novamente.';
+      this.showError(errorMessage);
+    }
   }
 
   private showWarning(message: string): void {
