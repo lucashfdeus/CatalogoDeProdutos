@@ -14,19 +14,29 @@ export class AuthService {
   ) { }
 
   login(email: string, password: string): Observable<any> {
-    return this.http.post(`${environment.apiUrl}/login`, { email, password }).pipe(
-      tap((response: any) => {
-        if (response.token) {
-          localStorage.setItem(this.TOKEN_KEY, response.token);
+    return this.http.post(`${environment.apiUrl}/login`, { email, password }, {
+      responseType: 'text'
+    }).pipe(
+      tap((response: string) => {
+        try {
+          const jsonResponse = JSON.parse(response);
+          if (jsonResponse.token) {
+            localStorage.setItem(this.TOKEN_KEY, jsonResponse.token);
+          }
+        } catch {
+          console.log('Resposta não-JSON:', response);
         }
       }),
       catchError((error: HttpErrorResponse) => {
         if (error.status === 401) {
-          this.router.navigate(['/auth/access']);
+          const errorMessage = typeof error.error === 'string' ? error.error : 'Usuário ou senha inválidos';
+          this.router.navigate(['/auth/access'], {
+            state: { errorMessage: errorMessage }
+          });
         }
 
         return throwError(() => ({
-          message: error.error?.message || 'Erro durante o login',
+          message: typeof error.error === 'string' ? error.error : 'Erro durante o login',
           status: error.status
         }));
       })

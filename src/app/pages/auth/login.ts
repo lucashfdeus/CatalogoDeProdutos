@@ -130,6 +130,8 @@ export class Login implements OnInit, OnDestroy {
     if (error.status !== 401) {
       const errorMessage = error?.message || 'Erro ao realizar login. Tente novamente.';
       this.showError(errorMessage);
+    } else {
+      this.showError(error.message);
     }
   }
 

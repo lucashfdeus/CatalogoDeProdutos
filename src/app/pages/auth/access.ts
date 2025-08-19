@@ -21,20 +21,14 @@ import { CommonModule } from '@angular/common';
                             <h1 class="text-surface-900 dark:text-surface-0 font-bold text-4xl lg:text-5xl mb-2">
                                 {{ status === 401 ? 'Falha na Autenticação' : 'Acesso Negado' }}
                             </h1>
-                            <div *ngIf="errorMessage" class="error-message">
-                              {{ errorMessage }}
-                            </div>
-                            <span *ngIf="!errorMessage" class="text-muted-color mb-8">
-                                Por favor, entre em contato com os administradores.
+                            <span class="text-red-500 dark:text-red-400 font-medium mb-8">
+                                {{ errorMessage || 'Por favor, entre em contato com os administradores.' }}
                             </span>
 
                             <img src="https://primefaces.org/cdn/templates/sakai/auth/asset-access.svg" alt="Access denied" class="mb-8" width="80%" />
 
                             <div class="col-span-12 mt-8 text-center">
-                                <p-button label="Ir para Login"
-                                          severity="warn"
-                                          (click)="navigateToLogin()">
-                                </p-button>
+                                <p-button label="Ir para Login" severity="warn"(click)="navigateToLogin()"></p-button>
                             </div>
                         </div>
                     </div>
@@ -43,28 +37,15 @@ import { CommonModule } from '@angular/common';
         </div>`
 })
 export class Access {
-  errorMessage: string | null = null;
-  status: number | null = null;
-  email: string | null = null;
+  status = 401;
+  errorMessage: string;
 
   constructor(private router: Router) {
     const navigation = this.router.getCurrentNavigation();
-    const state = navigation?.extras?.state as {
-      errorMessage: string;
-      status: number;
-      email?: string;
-    };
-    this.errorMessage = state?.errorMessage || null;
-    this.status = state?.status || null;
-    this.email = state?.email || null;
+    this.errorMessage = navigation?.extras?.state?.['errorMessage'] || 'Acesso não autorizado';
   }
 
   navigateToLogin(): void {
-    this.router.navigate(['/auth/login'], {
-      state: {
-        preservedError: this.errorMessage,
-        email: this.email
-      }
-    });
+    this.router.navigate(['/auth/login']);
   }
 }
