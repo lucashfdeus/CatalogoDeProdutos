@@ -1,8 +1,11 @@
-import { Component, OnInit, signal, ViewChild } from '@angular/core';
-import { MessageService, ConfirmationService } from 'primeng/api';
-import { ProductModel, ProductService } from '../service/product.service';
+import { Component, OnInit, signal, ViewChild, inject, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+
+// PrimeNG imports
 import { ButtonModule } from 'primeng/button';
 import { RippleModule } from 'primeng/ripple';
 import { ToastModule } from 'primeng/toast';
@@ -19,7 +22,10 @@ import { InputIconModule } from 'primeng/inputicon';
 import { IconFieldModule } from 'primeng/iconfield';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { SelectButtonModule } from 'primeng/selectbutton';
-import { catchError, forkJoin, of } from 'rxjs';
+import { MessageService, ConfirmationService } from 'primeng/api';
+
+// Services and models
+import { ProductModel, ProductService } from '../service/product.service';
 
 interface Column {
   field: string;
@@ -37,8 +43,8 @@ interface ExportColumn {
   standalone: true,
   imports: [
     CommonModule,
-    TableModule,
     FormsModule,
+    TableModule,
     ButtonModule,
     RippleModule,
     ToastModule,
@@ -202,38 +208,39 @@ interface ExportColumn {
   providers: [MessageService, ConfirmationService]
 })
 export class Product implements OnInit {
+  private readonly productService = inject(ProductService);
+  private readonly messageService = inject(MessageService);
+  private readonly confirmationService = inject(ConfirmationService);
+  private readonly destroyRef = inject(DestroyRef);
 
-  productDialog: boolean = false;
+  @ViewChild('dt') dt!: Table;
+
   products = signal<ProductModel[]>([]);
-  product: ProductModel = {};
   selectedProducts = signal<ProductModel[]>([]);
-  submitted: boolean = false;
+
+  // UI state
+  productDialog = false;
   loading = true;
+  loadingDepartments = false;
+  submitted = false;
   error = '';
 
-  statusOptions = [
+  // Data
+  product: ProductModel = {};
+  departments: any[] = [];
+
+  readonly statusOptions = [
     { label: 'Ativo', value: true },
     { label: 'Inativo', value: false }
   ];
 
-  departments: any[] = [];
-  loadingDepartments: boolean = false;
-
-  cols: Column[] = [
+  readonly cols: Column[] = [
     { field: 'codigo', header: 'Código' },
     { field: 'descricao', header: 'Descrição' },
     { field: 'preco', header: 'Preço' },
     { field: 'departamento', header: 'Departamento' },
     { field: 'status', header: 'Status' }
   ];
-
-  @ViewChild('dt') dt!: Table;
-
-  constructor(
-    private productService: ProductService,
-    private messageService: MessageService,
-    private confirmationService: ConfirmationService
-  ) { }
 
   ngOnInit(): void {
     this.loadProducts();
@@ -243,274 +250,251 @@ export class Product implements OnInit {
     this.loading = true;
     this.error = '';
 
-    this.productService.getProducts().subscribe({
-      next: (products: ProductModel[]) => {
-        this.products.set(products);
-        this.loading = false;
-      },
-      error: (error) => {
-        this.error = error.message || 'Erro ao carregar produtos';
-        this.loading = false;
-        console.error('Erro:', error);
-      }
-    });
+    this.productService.getProducts()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (products) => {
+          this.products.set(products);
+          this.loading = false;
+        },
+        error: (error) => {
+          this.handleError('Erro ao carregar produtos', error);
+          this.loading = false;
+        }
+      });
   }
 
   loadDepartments(): void {
     this.loadingDepartments = true;
-    this.productService.getDepartments().subscribe({
-      next: (depts) => {
-        this.departments = depts;
-        this.loadingDepartments = false;
-      },
-      error: (error) => {
-        console.error('Erro ao carregar departamentos:', error);
-        this.loadingDepartments = false;
-      }
-    });
+
+    this.productService.getDepartments()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (depts) => {
+          this.departments = depts;
+          this.loadingDepartments = false;
+        },
+        error: (error) => {
+          this.handleError('Erro ao carregar departamentos', error, false);
+          this.loadingDepartments = false;
+        }
+      });
   }
 
-  onGlobalFilter(table: Table, event: Event) {
+  onGlobalFilter(table: Table, event: Event): void {
     table.filterGlobal((event.target as HTMLInputElement).value, 'contains');
   }
 
-  openNew() {
+  openNew(): void {
     this.product = this.productService.generateProduct();
     this.submitted = false;
     this.productDialog = true;
     this.loadDepartments();
   }
 
-  editProduct(product: ProductModel) {
+  editProduct(product: ProductModel): void {
     this.product = { ...product };
     this.productDialog = true;
     this.loadDepartments();
   }
 
-  deleteSelectedProducts() {
-  if (!this.selectedProducts() || this.selectedProducts().length === 0) {
-    return;
-  }
-
-  this.confirmationService.confirm({
-    message: `Tem certeza de que deseja excluir ${this.selectedProducts().length} produto(s) selecionado(s)?`,
-    header: 'Confirmar Exclusão',
-    icon: 'pi pi-exclamation-triangle',
-    accept: () => {
-      const deleteObservables = this.selectedProducts()
-        .filter(product => product.id) // Filtra produtos com ID
-        .map(product =>
-          this.productService.deleteProduct(product.id!).pipe(
-            catchError(error => {
-              // Retorna um objeto com o erro para tratamento individual
-              return of({
-                success: false,
-                product: product,
-                error: error.message || 'Erro ao excluir produto'
-              });
-            })
-          )
-        );
-
-      if (deleteObservables.length === 0) {
-        this.messageService.add({
-          severity: 'warn',
-          summary: 'Aviso',
-          detail: 'Nenhum produto válido para excluir',
-          life: 3000
-        });
-        return;
-      }
-
-      forkJoin(deleteObservables).subscribe({
-        next: (results: any[]) => {
-          const successfulDeletes = results.filter(r => r.success === true);
-          const failedDeletes = results.filter(r => r.success === false);
-
-          if (successfulDeletes.length > 0) {
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Sucesso',
-              detail: `${successfulDeletes.length} produto(s) excluído(s) com sucesso`,
-              life: 3000
-            });
-          }
-
-          if (failedDeletes.length > 0) {
-            failedDeletes.forEach(failed => {
-              this.messageService.add({
-                severity: 'error',
-                summary: 'Erro',
-                detail: `Não foi possível excluir ${failed.product.descricao}: ${failed.error}`,
-                life: 5000
-              });
-            });
-          }
-
-          this.loadProducts(); // Recarrega a lista
-          this.selectedProducts.set([]);
-        },
-        error: (error) => {
-          console.error('Erro geral ao excluir produtos:', error);
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Erro',
-            detail: 'Ocorreu um erro durante a exclusão',
-            life: 3000
-          });
-          this.loadProducts(); // Recarrega mesmo em caso de erro
-        }
-      });
-    }
-  });
-}
-  deleteProduct(product: ProductModel) {
-    if (!product.id) {
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Aviso',
-        detail: 'Produto não possui ID válido',
-        life: 3000
-      });
+  deleteSelectedProducts(): void {
+    const selected = this.selectedProducts();
+    if (!selected || selected.length === 0) {
       return;
     }
 
     this.confirmationService.confirm({
-    message: `Tem certeza que deseja excluir "${product.descricao}"?`,
-    header: 'Confirmar Exclusão',
-    icon: 'pi pi-exclamation-triangle',
-    accept: () => {
-      this.productService.deleteProduct(product.id!).subscribe({
-        next: (result) => {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Sucesso',
-            detail: result.message || 'Produto excluído com sucesso',
-            life: 3000
-          });
-          this.loadProducts(); // Recarrega a lista
-        },
-        error: (error) => {
-          console.error('Erro ao excluir produto:', error);
-
-          // Mensagem específica da API
-          const errorDetail = error.message || 'Não foi possível excluir o produto';
-
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Erro',
-            detail: errorDetail,
-            life: 3000
-          });
-
-          this.loadProducts(); // Recarrega mesmo em caso de erro
-        }
-      });
-    }
-  });
+      message: `Tem certeza de que deseja excluir ${selected.length} produto(s) selecionado(s)?`,
+      header: 'Confirmar Exclusão',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        this.executeBulkDelete(selected);
+      }
+    });
   }
-  saveProduct() {
+
+  deleteProduct(product: ProductModel): void {
+    if (!product.id) {
+      this.showMessage('warn', 'Aviso', 'Produto não possui ID válido');
+      return;
+    }
+
+    this.confirmationService.confirm({
+      message: `Tem certeza que deseja excluir "${product.descricao}"?`,
+      header: 'Confirmar Exclusão',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        this.executeSingleDelete(product);
+      }
+    });
+  }
+
+  saveProduct(): void {
     this.submitted = true;
 
-    if (!this.product.codigo?.trim()) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Erro',
-        detail: 'Código é obrigatório',
-        life: 3000
-      });
+    if (!this.validateProductForm()) {
       return;
     }
 
-    if (!this.product.descricao?.trim()) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Erro',
-        detail: 'Descrição é obrigatória',
-        life: 3000
-      });
-      return;
-    }
-
-    if (!this.product.idDepartamento) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Erro',
-        detail: 'Departamento é obrigatório',
-        life: 3000
-      });
-      return;
-    }
-
-    const productToSave: ProductModel = {
-      codigo: this.product.codigo.trim(),
-      descricao: this.product.descricao.trim(),
-      preco: this.product.preco || 0,
-      status: this.product.status ?? true,
-      idDepartamento: this.product.idDepartamento
-    };
+    const productToSave = this.prepareProductForSave();
 
     if (this.product.id) {
-      productToSave.id = this.product.id;
-      this.productService.updateProduct(productToSave).subscribe({
-        next: () => {
-          this.messageService.add({
-            severity: 'success',
-            summary: 'Sucesso',
-            detail: 'Produto atualizado',
-            life: 3000
-          });
-          this.loadProducts();
-          this.productDialog = false;
-          this.product = {};
-        },
-        error: (error) => {
-          console.error('Erro na atualização:', error);
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Erro',
-            detail: 'Não foi possível atualizar o produto',
-            life: 3000
-          });
-        }
-      });
+      this.updateProduct(productToSave);
     } else {
-      this.productService.createProduct(productToSave).subscribe({
-        next: (novoCodigo) => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Sucesso',
-          detail: `Produto criado com código: ${novoCodigo}`,
-          life: 3000
-        });
-          this.loadProducts(); // Recarrega a lista para mostrar o novo produto
-        this.productDialog = false;
-        this.product = {};
-        },
-        error: (error) => {
-          console.error('Erro ao criar produto:', error);
-          this.messageService.add({
-            severity: 'error',
-            summary: 'Erro',
-            detail: 'Não foi possível criar o produto',
-            life: 3000
-          });
-      }
-      });
+      this.createProduct(productToSave);
     }
   }
 
-  exportCSV() {
+  exportCSV(): void {
     this.dt.exportCSV();
   }
 
-  hideDialog() {
+  hideDialog(): void {
     this.productDialog = false;
     this.submitted = false;
     this.departments = [];
   }
 
-  private generateId(): string {
-    return Math.random().toString(36).substr(2, 9);
+  // Private methods
+  private executeBulkDelete(products: ProductModel[]): void {
+    const deleteObservables = products
+      .filter(product => product.id)
+      .map(product =>
+        this.productService.deleteProduct(product.id!).pipe(
+          catchError(error => of({
+            success: false,
+            product,
+            error: error.message || 'Erro ao excluir produto'
+          }))
+        )
+      );
+
+    if (deleteObservables.length === 0) {
+      this.showMessage('warn', 'Aviso', 'Nenhum produto válido para excluir');
+      return;
+    }
+
+    forkJoin(deleteObservables)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (results) => this.handleBulkDeleteResults(results),
+        error: (error) => this.handleBulkDeleteError(error)
+      });
+  }
+
+  private executeSingleDelete(product: ProductModel): void {
+    this.productService.deleteProduct(product.id!)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (result) => {
+          this.showMessage('success', 'Sucesso', result.message || 'Produto excluído com sucesso');
+          this.loadProducts();
+        },
+        error: (error) => {
+          this.handleError('Erro ao excluir produto', error);
+          this.loadProducts();
+        }
+      });
+  }
+
+  private handleBulkDeleteResults(results: any[]): void {
+    const successfulDeletes = results.filter(r => r.success === true);
+    const failedDeletes = results.filter(r => r.success === false);
+
+    if (successfulDeletes.length > 0) {
+      this.showMessage('success', 'Sucesso', `${successfulDeletes.length} produto(s) excluído(s) com sucesso`);
+    }
+
+    if (failedDeletes.length > 0) {
+      failedDeletes.forEach(failed => {
+        this.showMessage('error', 'Erro', `Não foi possível excluir ${failed.product.descricao}: ${failed.error}`, 5000);
+      });
+    }
+
+    this.loadProducts();
+    this.selectedProducts.set([]);
+  }
+
+  private handleBulkDeleteError(error: any): void {
+    console.error('Erro geral ao excluir produtos:', error);
+    this.showMessage('error', 'Erro', 'Ocorreu um erro durante a exclusão');
+    this.loadProducts();
+  }
+
+  private validateProductForm(): boolean {
+    if (!this.product.codigo?.trim()) {
+      this.showMessage('error', 'Erro', 'Código é obrigatório');
+      return false;
+    }
+
+    if (!this.product.descricao?.trim()) {
+      this.showMessage('error', 'Erro', 'Descrição é obrigatória');
+      return false;
+    }
+
+    if (!this.product.idDepartamento) {
+      this.showMessage('error', 'Erro', 'Departamento é obrigatório');
+      return false;
+    }
+
+    return true;
+  }
+
+  private prepareProductForSave(): ProductModel {
+    return {
+      codigo: this.product.codigo!.trim(),
+      descricao: this.product.descricao!.trim(),
+      preco: this.product.preco || 0,
+      status: this.product.status ?? true,
+      idDepartamento: this.product.idDepartamento,
+      id: this.product.id
+    };
+  }
+
+  private updateProduct(product: ProductModel): void {
+    this.productService.updateProduct(product)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.showMessage('success', 'Sucesso', 'Produto atualizado');
+          this.loadProducts();
+          this.resetDialog();
+        },
+        error: (error) => {
+          this.handleError('Erro na atualização', error);
+        }
+      });
+  }
+
+  private createProduct(product: ProductModel): void {
+    this.productService.createProduct(product)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (novoCodigo) => {
+          this.showMessage('success', 'Sucesso', `Produto criado com código: ${novoCodigo}`);
+          this.loadProducts();
+          this.resetDialog();
+        },
+        error: (error) => {
+          this.handleError('Erro ao criar produto', error);
+        }
+      });
+  }
+
+  private resetDialog(): void {
+    this.productDialog = false;
+    this.product = {};
+  }
+
+  private handleError(summary: string, error: any, showUserMessage = true): void {
+    console.error(`${summary}:`, error);
+    if (showUserMessage) {
+      this.showMessage('error', 'Erro', error.message || summary);
+    }
+  }
+
+  private showMessage(severity: 'success' | 'error' | 'warn', summary: string, detail: string, life = 3000): void {
+    this.messageService.add({ severity, summary, detail, life });
   }
 }
