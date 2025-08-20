@@ -1,5 +1,7 @@
 import { Injectable, effect, signal, computed } from '@angular/core';
 import { Subject } from 'rxjs';
+import { AuthService } from '../../pages/service/auth.service';
+import { Router } from '@angular/router';
 
 export interface layoutConfig {
   preset?: string;
@@ -78,7 +80,7 @@ export class LayoutService {
 
   private initialized = false;
 
-  constructor() {
+  constructor(private authService: AuthService, private router: Router) {
     effect(() => {
       const config = this.layoutConfig();
       if (config) {
@@ -174,5 +176,11 @@ export class LayoutService {
 
   reset() {
     this.resetSource.next(true);
+  }
+
+  goHome(): void {
+    if (this.authService.isAuthenticated()) {
+      this.router.navigate(['/home']);
+    }
   }
 }

@@ -15,10 +15,6 @@ export const appRoutes: Routes = [
     component: AppLayout,
     canActivate: [AuthGuard],
     children: [
-      {
-        path: '',
-        component: AppLayout
-      }
     ]
   },
   {

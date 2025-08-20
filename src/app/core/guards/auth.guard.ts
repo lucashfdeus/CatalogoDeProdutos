@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
-import { CanActivate, Router, UrlTree } from '@angular/router';
+import { CanActivate, Router, UrlTree, ActivatedRouteSnapshot } from '@angular/router';
 import { AuthService } from '../../pages/service/auth.service';
-
 
 @Injectable({ providedIn: 'root' })
 export class AuthGuard implements CanActivate {
@@ -10,16 +9,24 @@ export class AuthGuard implements CanActivate {
     private router: Router
   ) { }
 
-  canActivate(): boolean | UrlTree {
-    if (this.authService.isAuthenticated()) {
-      return true
-    }
+  canActivate(route: ActivatedRouteSnapshot): boolean | UrlTree {
+    const isPublic = route.data['public'] as boolean;
 
-    return this.router.createUrlTree(['/auth/access'], {
-      queryParams: {
-       error: 'Acesso não autorizado',
-        status: 401
+    if (this.authService.isAuthenticated()) {
+      if (isPublic) {
+        return this.router.createUrlTree(['/home']);
       }
-    });
+      return true;
+    } else {
+      if (isPublic) {
+        return true;
+      }
+      return this.router.createUrlTree(['/auth/access'], {
+        queryParams: {
+          error: 'Acesso não autorizado',
+          status: 401
+        }
+      });
+    }
   }
 }
