@@ -71,7 +71,7 @@ import { MessageService } from 'primeng/api';
                                       Cadastre-se agora
                                     </span>
                             </div>
-                            <p-button label="Sign In" styleClass="w-full" type="button" (click)="submit()"></p-button>
+                            <p-button label="Entrar" styleClass="w-full" type="button" (click)="submit()"></p-button>
                             <p-toast></p-toast>
                         </div>
                     </div>
