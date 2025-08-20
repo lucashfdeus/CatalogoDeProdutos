@@ -1,13 +1,8 @@
-using LHFD.CatalogoDeProdutos.Api.Configurations;
+﻿using LHFD.CatalogoDeProdutos.Api.Configurations;
 using LHFD.CatalogoDeProdutos.Data.Context;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
-
-if (builder.Environment.IsDevelopment())
-{
-    builder.WebHost.UseUrls("https://localhost:5003", "http://localhost:5004");
-}
 
 builder.Services.AddDbContext<CatalogoDeProdutosDbContext>(options =>
 {

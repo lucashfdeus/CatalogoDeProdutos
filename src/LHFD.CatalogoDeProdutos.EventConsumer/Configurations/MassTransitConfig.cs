@@ -18,6 +18,8 @@ namespace LHFD.CatalogoDeProdutos.EventConsumer.Configurations
                 {
                     cfg.Host(rabbitMqConfig["HostName"], "/", h =>
                     {
+                        cfg.UseMessageRetry(r => r.Interval(30, TimeSpan.FromSeconds(10)));
+
                         h.Username(rabbitMqConfig["UserName"] ?? string.Empty);
                         h.Password(rabbitMqConfig["Password"] ?? string.Empty);
                     });

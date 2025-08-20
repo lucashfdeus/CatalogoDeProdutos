@@ -14,11 +14,13 @@ namespace LHFD.CatalogoDeProdutos.Api.Configurations
             {
                 x.UsingRabbitMq((context, cfg) =>
                 {
+                    cfg.UseMessageRetry(r => r.Interval(30, TimeSpan.FromSeconds(10)));
 
                     cfg.Host(rabbitMqConfig["HostName"], "/", h =>
                     {
                         h.Username(rabbitMqConfig["UserName"] ?? string.Empty);
                         h.Password(rabbitMqConfig["Password"] ?? string.Empty);
+
                     });
                 });
             });
