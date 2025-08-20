@@ -11,26 +11,20 @@ export class AuthService {
 
   constructor(private http: HttpClient, private router: Router) { }
 
+  account(email: string, password: string, confirmPassword: string): Observable<{ success: boolean, message?: string; }> {
+    return this.http.post<any>(`${environment.apiUrl}/nova-conta`, { email, password, confirmPassword })
+      .pipe(
+        map(res => this.handleAuthResponse(res)),
+        catchError(err => this.handleError(err, 'cadastro'))
+      );
+  }
+
   login(email: string, password: string): Observable<{ success: boolean, message?: string; }> {
-    return this.http.post<any>(`${environment.apiUrl}/login`, { email, password }).pipe(
-      map(response => {
-        if (response?.accessToken) {
-
-          localStorage.setItem(this.TOKEN_KEY, response.accessToken);
-
-          return { success: true };
-        }
-        return { success: false, message: 'Token não recebido' };
-      }),
-      catchError((error: HttpErrorResponse) => {
-
-        const errorMessage = typeof error.error === 'string'
-          ? error.error
-          : error.error?.title || 'Erro durante o login';
-
-        return of({ success: false, message: errorMessage });
-      })
-    );
+    return this.http.post<any>(`${environment.apiUrl}/login`, { email, password })
+      .pipe(
+        map(res => this.handleAuthResponse(res)),
+        catchError(err => this.handleError(err, 'login'))
+      );
   }
 
   isAuthenticated(): boolean {
@@ -40,5 +34,28 @@ export class AuthService {
   logout(): void {
     localStorage.removeItem(this.TOKEN_KEY);
     this.router.navigate(['/auth/login']);
+  }
+
+  private handleAuthResponse(response: any): { success: boolean; message?: string; } {
+    if (response?.accessToken) {
+      localStorage.setItem(this.TOKEN_KEY, response.accessToken);
+      return { success: true };
+    }
+    return { success: false, message: 'Token não recebido' };
+  }
+
+  private handleError(error: HttpErrorResponse, context: string) {
+    const errorMessage = this.extractErrorMessage(error.error) || `Erro durante o ${context}`;
+    return of({ success: false, message: errorMessage });
+  }
+
+  private extractErrorMessage(error: any): string {
+    if (Array.isArray(error)) {
+      return error.map((e: any) => e.description).join(' | ');
+    }
+    if (typeof error === 'string') {
+      return error;
+    }
+    return error?.title || 'Erro inesperado';
   }
 }
