@@ -1,31 +1,41 @@
-import { ToastModule } from 'primeng/toast';
-import { MessageModule } from 'primeng/message';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Subscription } from 'rxjs';
+
+// PrimeNG modules
+import { ToastModule } from 'primeng/toast';
+import { MessageModule } from 'primeng/message';
 import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { RippleModule } from 'primeng/ripple';
-import { AppFloatingConfigurator } from '../../layout/component/app.floatingconfigurator';
+
+// Services
 import { AuthService } from '../service/auth.service';
-import { Subscription } from 'rxjs';
 import { MessageService } from 'primeng/api';
+
+// Components
+import { AppFloatingConfigurator } from '../../layout/component/app.floatingconfigurator';
+
+
 
 @Component({
   selector: 'app-account',
   standalone: true,
-  imports: [ButtonModule,
+  imports: [
+    FormsModule,
+    RouterModule,
+    ButtonModule,
     CheckboxModule,
     InputTextModule,
     PasswordModule,
-    FormsModule,
-    RouterModule,
     RippleModule,
     ToastModule,
-    AppFloatingConfigurator,
-    MessageModule],
+    MessageModule,
+    AppFloatingConfigurator],
   providers: [MessageService],
   template: `
         <app-floating-configurator />
@@ -79,21 +89,40 @@ import { MessageService } from 'primeng/api';
     `
 })
 export class Account implements OnInit, OnDestroy {
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly messageService = inject(MessageService);
+  private readonly destroyRef = inject(DestroyRef);
+
+  // Estado do formulário
   email = '';
   password = '';
+  confirmPassword = '';
   rememberMe = false;
   isLoading = false;
-  confirmPassword = '';
 
-  private subscriptions = new Subscription();
-
-  constructor(
-    private authService: AuthService,
-    private router: Router,
-    private messageService: MessageService
-  ) { }
+  private readonly subscriptions = new Subscription();
 
   ngOnInit(): void {
+    this.loadRememberedEmail();
+  }
+
+  submit(): void {
+    if (!this.validateForm()) {
+      this.showWarning('Por favor, preencha todos os campos obrigatórios');
+      return;
+    }
+
+    this.isLoading = true;
+    this.handleRememberMe();
+    this.createAccount();
+  }
+
+  private validateForm(): boolean {
+    return !!this.email.trim() && !!this.password && !!this.confirmPassword;
+  }
+
+  private loadRememberedEmail(): void {
     const savedEmail = localStorage.getItem('rememberedEmail');
     if (savedEmail) {
       this.email = savedEmail;
@@ -101,46 +130,73 @@ export class Account implements OnInit, OnDestroy {
     }
   }
 
-  submit(): void {
-    if (!this.email || !this.password || !this.confirmPassword) {
-      this.showWarning('Por favor, preencha todos os campos obrigatórios');
-      return;
-    }
-
-    this.isLoading = true;
-
+  private handleRememberMe(): void {
     if (this.rememberMe) {
       localStorage.setItem('rememberedEmail', this.email);
     } else {
       localStorage.removeItem('rememberedEmail');
     }
+  }
 
-    const loginSub = this.authService.account(this.email, this.password, this.confirmPassword)
-      .subscribe(result => {
-        this.isLoading = false;
-
-        if (result.success) {
-          this.showSuccess('Login realizado com sucesso!');
-
-          setTimeout(() => this.router.navigate(['/home']), 800);
-        } else {
-          this.showError(result.message || 'Erro ao realizar login. Tente novamente.');
-        }
+  private createAccount(): void {
+    const accountSub = this.authService.account(this.email, this.password, this.confirmPassword)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (result) => this.handleAccountResult(result),
+        error: (error) => this.handleAccountError(error)
       });
 
-    this.subscriptions.add(loginSub);
+    this.subscriptions.add(accountSub);
+  }
+
+  private handleAccountResult(result: any): void {
+    this.isLoading = false;
+
+    if (result.success) {
+      this.showSuccess('Conta criada com sucesso!');
+      this.navigateToHome();
+    } else {
+      this.showError(result.message || 'Erro ao criar conta. Tente novamente.');
+    }
+  }
+
+  private handleAccountError(error: any): void {
+    this.isLoading = false;
+    console.error('Account creation error:', error);
+    this.showError('Erro de conexão. Tente novamente.');
+  }
+
+  private navigateToHome(): void {
+    setTimeout(() => {
+      this.router.navigate(['/home']);
+    }, 800);
   }
 
   private showSuccess(message: string): void {
-    this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: message, life: 6000 });
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Sucesso',
+      detail: message,
+      life: 3000
+    });
   }
 
   private showWarning(message: string): void {
-    this.messageService.add({ severity: 'warn', summary: 'Atenção', detail: message, life: 5000 });
+    this.messageService.add({
+      severity: 'warn',
+      summary: 'Atenção',
+      detail: message,
+      life: 4000
+    });
   }
 
   private showError(message: string): void {
-    this.messageService.add({ severity: 'error', summary: 'Erro', detail: message, life: 5000 });
+    this.messageService.add({
+      severity: 'error',
+      summary: 'Erro',
+      detail: message,
+      life: 5000
+    });
   }
 
   ngOnDestroy(): void {

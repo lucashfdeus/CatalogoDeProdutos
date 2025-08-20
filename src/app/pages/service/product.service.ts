@@ -1,6 +1,6 @@
 import { AuthService } from './auth.service';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { catchError, map, Observable, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
@@ -18,111 +18,85 @@ export interface ProductModel {
   providedIn: 'root'
 })
 export class ProductService {
-  constructor(private http: HttpClient, private authService: AuthService) { }
+  private readonly http = inject(HttpClient);
+  private readonly authService = inject(AuthService);
 
+  private readonly apiUrl = environment.apiUrl;
+  private readonly endpoints = {
+    produtos: `${this.apiUrl}/produtos`,
+    departamentos: `${this.apiUrl}/departamentos`
+  };
+
+  // CREATE: Criar novo produto
   createProduct(product: ProductModel): Observable<string> {
-    if (!this.validUserAuthentication()) {
-      return throwError(() => new Error('Usuário não autenticado'));
-    }
+    this.validateAuthentication();
 
-    if (!this.getToken()) {
-      return throwError(() => new Error('Token não disponível'));
-    }
+    const productToCreate = this.prepareProductForApi(product);
 
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${this.getToken()}`,
-      'Content-Type': 'application/json'
-    });
-
-    const productToCreate = {
-      codigo: product.codigo,
-      descricao: product.descricao,
-      preco: product.preco,
-      status: product.status,
-      idDepartamento: product.idDepartamento
-    };
-
-    return this.http.post<any>(`${environment.apiUrl}/produtos`, productToCreate, { headers })
-      .pipe(
-        map(response => response.codigo), // Retorna apenas o código
-        catchError(error => {
-          console.error('Erro ao criar produto:', error);
-          return throwError(() => error);
-        })
-      );
-  }
-
-  deleteProduct(id: string): Observable<{ success: boolean; message?: string; }> {
-    if (!this.validUserAuthentication()) {
-      return throwError(() => new Error('Usuário não autenticado'));
-    }
-
-    if (!this.getToken()) {
-      return throwError(() => new Error('Token não disponível'));
-    }
-
-  const headers = new HttpHeaders({
-    'Authorization': `Bearer ${this.getToken()}`,
-    'Content-Type': 'application/json'
-  });
-
-  return this.http.delete<any>(`${environment.apiUrl}/produtos/${id}`, { headers })
-    .pipe(
-      map(response => {
-        if (response.success === false) {
-          // Se a API retornou sucesso=false, trata como erro
-          const errorMessage = response.errors?.join(', ') || 'Erro ao excluir produto';
-          throw new Error(errorMessage);
-        }
-        return { success: true, message: 'Produto excluído com sucesso' };
-      }),
-      catchError(error => {
-        console.error('Erro ao excluir produto:', error);
-
-        // Se for um erro da API com estrutura conhecida
-        if (error.error && error.error.success === false) {
-          const apiError = error.error;
-          const errorMessage = apiError.errors?.join(', ') || 'Erro ao excluir produto';
-          return throwError(() => new Error(errorMessage));
-        }
-
-        // Se for outro tipo de erro
-        return throwError(() => error);
-      })
+    return this.http.post<any>(this.endpoints.produtos, productToCreate, {
+      headers: this.getAuthHeaders()
+    }).pipe(
+      map(response => response.codigo),
+      catchError(error => this.handleError('Erro ao criar produto', error))
     );
-}
-
-  getProducts(): Observable<ProductModel[]> {
-    if (!this.validUserAuthentication()) {
-      return throwError(() => new Error('Usuário não autenticado'));
-    }
-
-    if (!this.getToken()) {
-      return throwError(() => new Error('Token não disponível'));
-    }
-
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${this.getToken()}`,
-      'Content-Type': 'application/json'
-    });
-
-    return this.http.get<any[]>(`${environment.apiUrl}/produtos`, { headers })
-      .pipe(
-        map(apiProducts => this.mapApiProductsToModel(apiProducts)),
-        catchError(error => {
-          console.error('Erro ao buscar produtos:', error);
-          return throwError(() => error);
-        })
-      );
   }
 
+  // DELETE: Excluir produto
+  deleteProduct(id: string): Observable<{ success: boolean; message?: string; }> {
+    this.validateAuthentication();
+
+    return this.http.delete<any>(`${this.endpoints.produtos}/${id}`, {
+      headers: this.getAuthHeaders()
+    }).pipe(
+      map(response => this.handleDeleteResponse(response)),
+      catchError(error => this.handleDeleteError(error))
+    );
+  }
+
+  // GET: Obter todos os produtos
+  getProducts(): Observable<ProductModel[]> {
+    this.validateAuthentication();
+
+    return this.http.get<any[]>(this.endpoints.produtos, {
+      headers: this.getAuthHeaders()
+    }).pipe(
+      map(apiProducts => this.mapApiProductsToModel(apiProducts)),
+      catchError(error => this.handleError('Erro ao buscar produtos', error))
+    );
+  }
+
+  // UPDATE: Atualizar produto
+  updateProduct(product: ProductModel): Observable<any> {
+    this.validateAuthentication();
+
+    const productToUpdate = this.prepareProductForApi(product);
+
+    return this.http.put(`${this.endpoints.produtos}/${product.id}`, productToUpdate, {
+      headers: this.getAuthHeaders()
+    }).pipe(
+      catchError(error => this.handleError('Erro ao atualizar produto', error))
+    );
+  }
+
+  // GET: Obter departamentos
+  getDepartments(): Observable<any[]> {
+    this.validateAuthentication();
+
+    return this.http.get<any[]>(this.endpoints.departamentos, {
+      headers: this.getAuthHeaders()
+    }).pipe(
+      catchError(error => this.handleError('Erro ao buscar departamentos', error))
+    );
+  }
+
+  // Helper methods
   generateProduct(): ProductModel {
     return {
       id: undefined,
-      codigo: undefined,
-      descricao: undefined,
-      preco: undefined,
-      status: undefined,
+      codigo: '',
+      descricao: '',
+      preco: 0,
+      status: true,
       idDepartamento: undefined,
       departamento: undefined
     };
@@ -131,84 +105,76 @@ export class ProductService {
   generateProductWithData(data: Partial<ProductModel>): ProductModel {
     return {
       id: data.id,
-      codigo: data.codigo,
-      descricao: data.descricao,
-      preco: data.preco,
-      status: data.status,
+      codigo: data.codigo || '',
+      descricao: data.descricao || '',
+      preco: data.preco || 0,
+      status: data.status ?? true,
       idDepartamento: data.idDepartamento,
       departamento: data.departamento
     };
   }
 
-  updateProduct(product: ProductModel): Observable<any> {
-    if (!this.validUserAuthentication()) {
-      return throwError(() => new Error('Usuário não autenticado'));
+  // Private methods
+  private validateAuthentication(): void {
+    if (!this.isAuthenticated()) {
+      throw new Error('Usuário não autenticado');
     }
 
     if (!this.getToken()) {
-      return throwError(() => new Error('Token não disponível'));
+      throw new Error('Token não disponível');
     }
+  }
 
-    const headers = new HttpHeaders({
+  private getAuthHeaders(): HttpHeaders {
+    return new HttpHeaders({
       'Authorization': `Bearer ${this.getToken()}`,
       'Content-Type': 'application/json'
     });
+  }
 
-    const productToUpdate = {
-      id: product.id,
+  private prepareProductForApi(product: ProductModel): any {
+    return {
       codigo: product.codigo,
       descricao: product.descricao,
       preco: product.preco,
       status: product.status,
-      idDepartamento: product.idDepartamento
+      idDepartamento: product.idDepartamento,
+      ...(product.id && { id: product.id })
     };
-
-    return this.http.put(`${environment.apiUrl}/produtos/${product.id}`, productToUpdate, { headers })
-      .pipe(
-        catchError(error => {
-          console.error('Erro ao atualizar produto:', error);
-          return throwError(() => error);
-        })
-      );
   }
 
-  getDepartments(): Observable<any[]> {
-    if (!this.authService.isAuthenticated()) {
-      return throwError(() => new Error('Usuário não autenticado'));
+  private handleDeleteResponse(response: any): { success: boolean; message?: string; } {
+    if (response.success === false) {
+      const errorMessage = response.errors?.join(', ') || 'Erro ao excluir produto';
+      throw new Error(errorMessage);
     }
-
-    if (!this.getToken()) {
-      return throwError(() => new Error('Token não disponível'));
-    }
-
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${this.getToken()}`,
-      'Content-Type': 'application/json'
-    });
-
-    return this.http.get<any[]>(`${environment.apiUrl}/departamentos`, { headers })
-      .pipe(
-        catchError(error => {
-          console.error('Erro ao buscar departamentos:', error);
-          return throwError(() => error);
-        })
-      );
+    return { success: true, message: 'Produto excluído com sucesso' };
   }
 
-  private validUserAuthentication(): boolean {
-    return this.authService.isAuthenticated();
+  private handleDeleteError(error: any): Observable<never> {
+    if (error.error?.success === false) {
+      const apiError = error.error;
+      const errorMessage = apiError.errors?.join(', ') || 'Erro ao excluir produto';
+      return throwError(() => new Error(errorMessage));
+    }
+    return throwError(() => error);
   }
 
   private mapApiProductsToModel(apiProducts: any[]): ProductModel[] {
     return apiProducts.map(product => ({
-      id: product.id?.toString(),
-      codigo: product.codigo || product.codigoProduto || product.sku,
-      descricao: product.descricao || product.nome || product.descricaoProduto,
-      preco: product.preco || product.valor || product.precoVenda,
+      id: this.parseId(product.id),
+      codigo: product.codigo || product.codigoProduto || product.sku || '',
+      descricao: product.descricao || product.nome || product.descricaoProduto || '',
+      preco: product.preco || product.valor || product.precoVenda || 0,
       status: this.convertToBoolean(product.status || product.ativo || product.disponivel),
-      idDepartamento: product.idDepartamento || product.departamentoId || product.departamentoId,
-      departamento: product.departamento || product.nomeDepartamento || product.departamentoId
+      idDepartamento: product.idDepartamento || product.departamentoId,
+      departamento: product.departamento || product.nomeDepartamento
     }));
+  }
+
+  private parseId(id: any): string | undefined {
+    if (id == null) return undefined;
+    return id.toString();
   }
 
   private convertToBoolean(value: any): boolean {
@@ -220,7 +186,16 @@ export class ProductService {
     return false;
   }
 
-  private getToken() {
+  private handleError(context: string, error: any): Observable<never> {
+    console.error(`${context}:`, error);
+    return throwError(() => error);
+  }
+
+  private isAuthenticated(): boolean {
+    return this.authService.isAuthenticated();
+  }
+
+  private getToken(): string | null {
     return this.authService.getToken();
   }
 }
