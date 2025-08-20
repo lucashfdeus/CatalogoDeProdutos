@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { StyleClassModule } from 'primeng/styleclass';
 import { AppConfigurator } from './app.configurator';
 import { LayoutService } from '../service/layout.service';
+import { AuthService } from './../../pages/service/auth.service';
 
 @Component({
   selector: 'app-topbar',
@@ -56,25 +57,29 @@ import { LayoutService } from '../service/layout.service';
                     </button>
                     <app-configurator />
                 </div>
+                  <div class="layout-topbar-menu-content">
+                      <button class="p-menuitem-link layout-topbar-action" (click)="logout()">
+                          <i class="pi pi-sign-out"></i>
+                          <span>Sair</span>
+                      </button>
+                  </div>
             </div>
-
-            <button class="layout-topbar-menu-button layout-topbar-action" pStyleClass="@next" enterFromClass="hidden" enterActiveClass="animate-scalein" leaveToClass="hidden" leaveActiveClass="animate-fadeout" [hideOnOutsideClick]="true">
+            <!-- <button class="layout-topbar-menu-button layout-topbar-action" pStyleClass="@next" enterFromClass="hidden" enterActiveClass="animate-scalein" leaveToClass="hidden" leaveActiveClass="animate-fadeout" [hideOnOutsideClick]="true">
                 <i class="pi pi-ellipsis-v"></i>
-            </button>
-
-            <div class="layout-topbar-menu hidden lg:block">
-                <div class="layout-topbar-menu-content">
-                </div>
-            </div>
+            </button> -->
         </div>
     </div>`
 })
 export class AppTopbar {
   items!: MenuItem[];
 
-  constructor(public layoutService: LayoutService) {}
+  constructor(public layoutService: LayoutService, private authService: AuthService) { }
 
   toggleDarkMode() {
     this.layoutService.layoutConfig.update((state) => ({ ...state, darkTheme: !state.darkTheme }));
+  }
+
+  logout() {
+    this.authService.logout();
   }
 }
