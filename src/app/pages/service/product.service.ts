@@ -18,22 +18,91 @@ export interface ProductModel {
   providedIn: 'root'
 })
 export class ProductService {
-  constructor(private http: HttpClient, private authService: AuthService) {}
+  constructor(private http: HttpClient, private authService: AuthService) { }
 
-  // Método principal - Retorna Observable (abordagem recomendada)
-  getProducts(): Observable<ProductModel[]> {
-    if (!this.authService.isAuthenticated()) {
+  createProduct(product: ProductModel): Observable<string> {
+    if (!this.validUserAuthentication()) {
       return throwError(() => new Error('Usuário não autenticado'));
     }
 
-    const token = this.authService.getToken();
-
-    if (!token) {
+    if (!this.getToken()) {
       return throwError(() => new Error('Token não disponível'));
     }
 
     const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`,
+      'Authorization': `Bearer ${this.getToken()}`,
+      'Content-Type': 'application/json'
+    });
+
+    const productToCreate = {
+      codigo: product.codigo,
+      descricao: product.descricao,
+      preco: product.preco,
+      status: product.status,
+      idDepartamento: product.idDepartamento
+    };
+
+    return this.http.post<any>(`${environment.apiUrl}/produtos`, productToCreate, { headers })
+      .pipe(
+        map(response => response.codigo), // Retorna apenas o código
+        catchError(error => {
+          console.error('Erro ao criar produto:', error);
+          return throwError(() => error);
+        })
+      );
+  }
+
+  deleteProduct(id: string): Observable<{ success: boolean; message?: string; }> {
+    if (!this.validUserAuthentication()) {
+      return throwError(() => new Error('Usuário não autenticado'));
+    }
+
+    if (!this.getToken()) {
+      return throwError(() => new Error('Token não disponível'));
+    }
+
+  const headers = new HttpHeaders({
+    'Authorization': `Bearer ${this.getToken()}`,
+    'Content-Type': 'application/json'
+  });
+
+  return this.http.delete<any>(`${environment.apiUrl}/produtos/${id}`, { headers })
+    .pipe(
+      map(response => {
+        if (response.success === false) {
+          // Se a API retornou sucesso=false, trata como erro
+          const errorMessage = response.errors?.join(', ') || 'Erro ao excluir produto';
+          throw new Error(errorMessage);
+        }
+        return { success: true, message: 'Produto excluído com sucesso' };
+      }),
+      catchError(error => {
+        console.error('Erro ao excluir produto:', error);
+
+        // Se for um erro da API com estrutura conhecida
+        if (error.error && error.error.success === false) {
+          const apiError = error.error;
+          const errorMessage = apiError.errors?.join(', ') || 'Erro ao excluir produto';
+          return throwError(() => new Error(errorMessage));
+        }
+
+        // Se for outro tipo de erro
+        return throwError(() => error);
+      })
+    );
+}
+
+  getProducts(): Observable<ProductModel[]> {
+    if (!this.validUserAuthentication()) {
+      return throwError(() => new Error('Usuário não autenticado'));
+    }
+
+    if (!this.getToken()) {
+      return throwError(() => new Error('Token não disponível'));
+    }
+
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${this.getToken()}`,
       'Content-Type': 'application/json'
     });
 
@@ -45,29 +114,6 @@ export class ProductService {
           return throwError(() => error);
         })
       );
-  }
-
-  // Método para mapear os dados da API para ProductModel[]
-  private mapApiProductsToModel(apiProducts: any[]): ProductModel[] {
-    return apiProducts.map(product => ({
-      id: product.id?.toString(),
-      codigo: product.codigo || product.codigoProduto || product.sku,
-      descricao: product.descricao || product.nome || product.descricaoProduto,
-      preco: product.preco || product.valor || product.precoVenda,
-      status: this.convertToBoolean(product.status || product.ativo || product.disponivel),
-      idDepartamento: product.idDepartamento || product.departamentoId || product.departamentoId,
-      departamento: product.departamento || product.nomeDepartamento || product.departamentoId
-    }));
-  }
-
-  // Método auxiliar para converter diversos formatos para boolean
-  private convertToBoolean(value: any): boolean {
-    if (typeof value === 'boolean') return value;
-    if (typeof value === 'number') return value !== 0;
-    if (typeof value === 'string') {
-      return value.toLowerCase() === 'true' || value === '1';
-    }
-    return false;
   }
 
   generateProduct(): ProductModel {
@@ -82,7 +128,6 @@ export class ProductService {
     };
   }
 
-  // Método adicional para criar produto com dados iniciais
   generateProductWithData(data: Partial<ProductModel>): ProductModel {
     return {
       id: data.id,
@@ -95,20 +140,17 @@ export class ProductService {
     };
   }
 
-   // Método para atualizar produto
   updateProduct(product: ProductModel): Observable<any> {
-    if (!this.authService.isAuthenticated()) {
+    if (!this.validUserAuthentication()) {
       return throwError(() => new Error('Usuário não autenticado'));
     }
 
-    const token = this.authService.getToken();
-
-    if (!token) {
+    if (!this.getToken()) {
       return throwError(() => new Error('Token não disponível'));
     }
 
     const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`,
+      'Authorization': `Bearer ${this.getToken()}`,
       'Content-Type': 'application/json'
     });
 
@@ -135,14 +177,12 @@ export class ProductService {
       return throwError(() => new Error('Usuário não autenticado'));
     }
 
-    const token = this.authService.getToken();
-
-    if (!token) {
+    if (!this.getToken()) {
       return throwError(() => new Error('Token não disponível'));
     }
 
     const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`,
+      'Authorization': `Bearer ${this.getToken()}`,
       'Content-Type': 'application/json'
     });
 
@@ -153,5 +193,34 @@ export class ProductService {
           return throwError(() => error);
         })
       );
+  }
+
+  private validUserAuthentication(): boolean {
+    return this.authService.isAuthenticated();
+  }
+
+  private mapApiProductsToModel(apiProducts: any[]): ProductModel[] {
+    return apiProducts.map(product => ({
+      id: product.id?.toString(),
+      codigo: product.codigo || product.codigoProduto || product.sku,
+      descricao: product.descricao || product.nome || product.descricaoProduto,
+      preco: product.preco || product.valor || product.precoVenda,
+      status: this.convertToBoolean(product.status || product.ativo || product.disponivel),
+      idDepartamento: product.idDepartamento || product.departamentoId || product.departamentoId,
+      departamento: product.departamento || product.nomeDepartamento || product.departamentoId
+    }));
+  }
+
+  private convertToBoolean(value: any): boolean {
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'number') return value !== 0;
+    if (typeof value === 'string') {
+      return value.toLowerCase() === 'true' || value === '1';
+    }
+    return false;
+  }
+
+  private getToken() {
+    return this.authService.getToken();
   }
 }

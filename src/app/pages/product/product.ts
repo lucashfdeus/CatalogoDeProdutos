@@ -19,6 +19,7 @@ import { InputIconModule } from 'primeng/inputicon';
 import { IconFieldModule } from 'primeng/iconfield';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { SelectButtonModule } from 'primeng/selectbutton';
+import { catchError, forkJoin, of } from 'rxjs';
 
 interface Column {
   field: string;
@@ -287,127 +288,226 @@ export class Product implements OnInit {
   }
 
   deleteSelectedProducts() {
-    this.confirmationService.confirm({
-      message: 'Tem certeza de que deseja excluir os produtos selecionados?',
-      header: 'Confirmar',
-      icon: 'pi pi-exclamation-triangle',
-      accept: () => {
-        const currentProducts = this.products();
-        const selected = this.selectedProducts();
+  if (!this.selectedProducts() || this.selectedProducts().length === 0) {
+    return;
+  }
 
-        const filteredProducts = currentProducts.filter(
-          val => !selected.some(selectedProduct => selectedProduct.id === val.id)
+  this.confirmationService.confirm({
+    message: `Tem certeza de que deseja excluir ${this.selectedProducts().length} produto(s) selecionado(s)?`,
+    header: 'Confirmar Exclusão',
+    icon: 'pi pi-exclamation-triangle',
+    accept: () => {
+      const deleteObservables = this.selectedProducts()
+        .filter(product => product.id) // Filtra produtos com ID
+        .map(product =>
+          this.productService.deleteProduct(product.id!).pipe(
+            catchError(error => {
+              // Retorna um objeto com o erro para tratamento individual
+              return of({
+                success: false,
+                product: product,
+                error: error.message || 'Erro ao excluir produto'
+              });
+            })
+          )
         );
 
-        this.products.set(filteredProducts);
-        this.selectedProducts.set([]);
+      if (deleteObservables.length === 0) {
+        this.messageService.add({
+          severity: 'warn',
+          summary: 'Aviso',
+          detail: 'Nenhum produto válido para excluir',
+          life: 3000
+        });
+        return;
+      }
 
+      forkJoin(deleteObservables).subscribe({
+        next: (results: any[]) => {
+          const successfulDeletes = results.filter(r => r.success === true);
+          const failedDeletes = results.filter(r => r.success === false);
+
+          if (successfulDeletes.length > 0) {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Sucesso',
+              detail: `${successfulDeletes.length} produto(s) excluído(s) com sucesso`,
+              life: 3000
+            });
+          }
+
+          if (failedDeletes.length > 0) {
+            failedDeletes.forEach(failed => {
+              this.messageService.add({
+                severity: 'error',
+                summary: 'Erro',
+                detail: `Não foi possível excluir ${failed.product.descricao}: ${failed.error}`,
+                life: 5000
+              });
+            });
+          }
+
+          this.loadProducts(); // Recarrega a lista
+          this.selectedProducts.set([]);
+        },
+        error: (error) => {
+          console.error('Erro geral ao excluir produtos:', error);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Erro',
+            detail: 'Ocorreu um erro durante a exclusão',
+            life: 3000
+          });
+          this.loadProducts(); // Recarrega mesmo em caso de erro
+        }
+      });
+    }
+  });
+}
+  deleteProduct(product: ProductModel) {
+    if (!product.id) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Aviso',
+        detail: 'Produto não possui ID válido',
+        life: 3000
+      });
+      return;
+    }
+
+    this.confirmationService.confirm({
+    message: `Tem certeza que deseja excluir "${product.descricao}"?`,
+    header: 'Confirmar Exclusão',
+    icon: 'pi pi-exclamation-triangle',
+    accept: () => {
+      this.productService.deleteProduct(product.id!).subscribe({
+        next: (result) => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Sucesso',
+            detail: result.message || 'Produto excluído com sucesso',
+            life: 3000
+          });
+          this.loadProducts(); // Recarrega a lista
+        },
+        error: (error) => {
+          console.error('Erro ao excluir produto:', error);
+
+          // Mensagem específica da API
+          const errorDetail = error.message || 'Não foi possível excluir o produto';
+
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Erro',
+            detail: errorDetail,
+            life: 3000
+          });
+
+          this.loadProducts(); // Recarrega mesmo em caso de erro
+        }
+      });
+    }
+  });
+  }
+  saveProduct() {
+    this.submitted = true;
+
+    if (!this.product.codigo?.trim()) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Erro',
+        detail: 'Código é obrigatório',
+        life: 3000
+      });
+      return;
+    }
+
+    if (!this.product.descricao?.trim()) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Erro',
+        detail: 'Descrição é obrigatória',
+        life: 3000
+      });
+      return;
+    }
+
+    if (!this.product.idDepartamento) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Erro',
+        detail: 'Departamento é obrigatório',
+        life: 3000
+      });
+      return;
+    }
+
+    const productToSave: ProductModel = {
+      codigo: this.product.codigo.trim(),
+      descricao: this.product.descricao.trim(),
+      preco: this.product.preco || 0,
+      status: this.product.status ?? true,
+      idDepartamento: this.product.idDepartamento
+    };
+
+    if (this.product.id) {
+      productToSave.id = this.product.id;
+      this.productService.updateProduct(productToSave).subscribe({
+        next: () => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Sucesso',
+            detail: 'Produto atualizado',
+            life: 3000
+          });
+          this.loadProducts();
+          this.productDialog = false;
+          this.product = {};
+        },
+        error: (error) => {
+          console.error('Erro na atualização:', error);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Erro',
+            detail: 'Não foi possível atualizar o produto',
+            life: 3000
+          });
+        }
+      });
+    } else {
+      this.productService.createProduct(productToSave).subscribe({
+        next: (novoCodigo) => {
         this.messageService.add({
           severity: 'success',
           summary: 'Sucesso',
-          detail: 'Produtos excluídos',
+          detail: `Produto criado com código: ${novoCodigo}`,
           life: 3000
         });
+          this.loadProducts(); // Recarrega a lista para mostrar o novo produto
+        this.productDialog = false;
+        this.product = {};
+        },
+        error: (error) => {
+          console.error('Erro ao criar produto:', error);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Erro',
+            detail: 'Não foi possível criar o produto',
+            life: 3000
+          });
       }
-    });
+      });
+    }
+  }
+
+  exportCSV() {
+    this.dt.exportCSV();
   }
 
   hideDialog() {
     this.productDialog = false;
     this.submitted = false;
     this.departments = [];
-  }
-
-  deleteProduct(product: ProductModel) {
-    this.confirmationService.confirm({
-      message: 'Tem certeza que deseja excluir ' + product.descricao + '?',
-      header: 'Confirmar',
-      icon: 'pi pi-exclamation-triangle',
-      accept: () => {
-        const currentProducts = this.products();
-        const filteredProducts = currentProducts.filter(val => val.id !== product.id);
-        this.products.set(filteredProducts);
-
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Sucesso',
-          detail: 'Produto excluído',
-          life: 3000
-        });
-      }
-    });
-  }
-
-  saveProduct() {
-    this.submitted = true;
-
-    // Debug para verificar os valores atuais
-    console.log('🔍 Valores atuais do produto:', {
-      status: this.product.status,
-      tipoStatus: typeof this.product.status,
-      idDepartamento: this.product.idDepartamento,
-      tipoIdDepartamento: typeof this.product.idDepartamento
-    });
-
-    if (this.product.codigo?.trim() && this.product.descricao?.trim()) {
-      // Garantir que os tipos estão corretos
-      const productToUpdate: ProductModel = {
-        id: this.product.id,
-        codigo: this.product.codigo.trim(),
-        descricao: this.product.descricao.trim(),
-        preco: this.product.preco,
-        status: this.product.status, // Já deve estar como boolean
-        idDepartamento: this.product.idDepartamento // Já deve estar como number
-      };
-
-      console.log('📤 Enviando para atualização:', productToUpdate);
-
-      if (this.product.id) {
-        this.productService.updateProduct(productToUpdate).subscribe({
-          next: () => {
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Sucesso',
-              detail: 'Produto atualizado',
-              life: 3000
-            });
-            this.loadProducts();
-            this.productDialog = false;
-            this.product = {};
-          },
-          error: (error) => {
-            console.error('❌ Erro na atualização:', error);
-            // Log mais detalhado do erro
-            if (error.error) {
-              console.error('❌ Resposta da API:', error.error);
-            }
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Erro',
-              detail: 'Não foi possível atualizar o produto',
-              life: 3000
-            });
-          }
-        });
-      } else {
-        // Lógica para criar novo produto
-        const currentProducts = this.products();
-        this.product.id = this.generateId();
-        this.products.set([...currentProducts, { ...this.product }]);
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Sucesso',
-          detail: 'Produto criado',
-          life: 3000
-        });
-        this.productDialog = false;
-        this.product = {};
-      }
-    }
-  }
-
-  exportCSV() {
-    this.dt.exportCSV();
   }
 
   private generateId(): string {
