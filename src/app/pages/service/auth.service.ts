@@ -7,7 +7,7 @@ import { Router } from '@angular/router';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly TOKEN_KEY = 'auth_token';
+  public readonly TOKEN_KEY = 'auth_token';
 
   constructor(private http: HttpClient, private router: Router) { }
 
@@ -34,6 +34,10 @@ export class AuthService {
   logout(): void {
     localStorage.removeItem(this.TOKEN_KEY);
     this.router.navigate(['/auth/login']);
+  }
+
+  getToken(): string | null {
+    return localStorage.getItem(this.TOKEN_KEY);
   }
 
   private handleAuthResponse(response: any): { success: boolean; message?: string; } {
