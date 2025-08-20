@@ -67,7 +67,7 @@ import { MessageService } from 'primeng/api';
                                     <p-checkbox [(ngModel)]="rememberMe" id="rememberme1" binary class="mr-2"></p-checkbox>
                                     <label for="rememberme1">Lembrar-me</label>
                                 </div>
-                                <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary">Esqueceu a senha?</span>
+                                <!-- <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary">Esqueceu a senha?</span> -->
                             </div>
                             <p-button label="Sign In" styleClass="w-full" type="button" (click)="submit()"></p-button>
                             <p-toast></p-toast>
@@ -79,10 +79,10 @@ import { MessageService } from 'primeng/api';
     `
 })
 export class Login implements OnInit, OnDestroy {
-  email: string = '';
-  password: string = '';
-  rememberMe: boolean = false;
-  isLoading: boolean = false;
+  email = '';
+  password = '';
+  rememberMe = false;
+  isLoading = false;
 
   private subscriptions = new Subscription();
 
@@ -115,42 +115,31 @@ export class Login implements OnInit, OnDestroy {
     }
 
     const loginSub = this.authService.login(this.email, this.password)
-      .subscribe({
-        next: (response) => this.handleLoginSuccess(response),
-        error: (error) => this.handleLoginError(error)
+      .subscribe(result => {
+        this.isLoading = false;
+
+        if (result.success) {
+          this.showSuccess('Login realizado com sucesso!');
+
+          setTimeout(() => this.router.navigate(['/home']), 800);
+        } else {
+          this.showError(result.message || 'Erro ao realizar login. Tente novamente.');
+        }
       });
 
     this.subscriptions.add(loginSub);
   }
 
-  private handleLoginSuccess(response: any): void {
-    this.isLoading = false;
-    this.router.navigate(['/home']);
-  }
-
-  private handleLoginError(error: any): void {
-    this.isLoading = false;
-
-    const errorMessage = error?.message || 'Erro ao realizar login. Tente novamente.';
-    this.showError(errorMessage);
+  private showSuccess(message: string): void {
+    this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: message, life: 6000 });
   }
 
   private showWarning(message: string): void {
-    this.messageService.add({
-      severity: 'warn',
-      summary: 'Atenção',
-      detail: message,
-      life: 5000
-    });
+    this.messageService.add({ severity: 'warn', summary: 'Atenção', detail: message, life: 5000 });
   }
 
   private showError(message: string): void {
-    this.messageService.add({
-      severity: 'error',
-      summary: 'Erro',
-      detail: message,
-      life: 5000
-    });
+    this.messageService.add({ severity: 'error', summary: 'Erro', detail: message, life: 5000 });
   }
 
   ngOnDestroy(): void {
