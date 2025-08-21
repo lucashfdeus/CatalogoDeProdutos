@@ -109,7 +109,6 @@ export class Account implements OnInit, OnDestroy {
 
   submit(): void {
     if (!this.validateForm()) {
-      this.showWarning('Por favor, preencha todos os campos obrigatórios');
       return;
     }
 
@@ -119,7 +118,23 @@ export class Account implements OnInit, OnDestroy {
   }
 
   private validateForm(): boolean {
-    return !!this.email.trim() && !!this.password && !!this.confirmPassword;
+    if (!this.email.trim() || !this.password || !this.confirmPassword) {
+      this.showWarning('Por favor, preencha todos os campos obrigatórios');
+      return false;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(this.email)) {
+      this.showWarning('Por favor, digite um email válido');
+      return false;
+    }
+
+    if (this.password !== this.confirmPassword) {
+      this.showWarning('As senhas não são iguais. Por favor, digite a mesma senha nos dois campos.');
+      return false;
+    }
+
+    return true;
   }
 
   private loadRememberedEmail(): void {
