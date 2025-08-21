@@ -29,10 +29,25 @@ namespace LHFD.CatalogoDeProdutos.Api.Controllers
             _appSettings = appSettings.Value;
         }
 
+
         [HttpPost("nova-conta")]
         public async Task<IActionResult> Register(RegisterUserDto model)
         {
-            var result = await _userManager.CreateAsync(MapUserIdentity(model), model.Password);
+            if (model.Password != model.ConfirmPassword)
+            {
+                return BadRequest(new[]
+                {
+                    new IdentityError
+                    {
+                        Code = nameof(IdentityErrorDescriber.PasswordMismatch),
+                        Description = "As senhas não são iguais. Por favor, digite a mesma senha nos dois campos."
+                    }
+                });
+            }
+
+            var user = MapUserIdentity(model);
+
+            var result = await _userManager.CreateAsync(user, model.Password);
 
             if (!result.Succeeded)
                 return BadRequest(result.Errors);
