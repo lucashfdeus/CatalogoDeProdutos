@@ -16,7 +16,7 @@ export class HttpErrorInterceptor implements HttpInterceptor {
     return next.handle(request).pipe(
       catchError((error: HttpErrorResponse) => {
         if (error.status === 0) {
-          const customError = new Error('Servidor indisponível. Verifique se a API está rodando em https://localhost:5001');
+          const customError = new Error('Servidor indisponível. Verifique se a API está rodando em http://localhost:5000');
           return throwError(() => customError);
         }
         return throwError(() => error);
