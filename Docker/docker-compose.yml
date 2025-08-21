@@ -4,7 +4,8 @@ services:
     build:
       context: ..
       dockerfile: Docker/Dockerfile
-    container_name: catalogo-produtos-prod
+    image: catalogo-produtos-ui
+    container_name: frontend-catalogo-produtos
     ports:
       - "4200:80"
     restart: unless-stopped

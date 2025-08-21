@@ -8,8 +8,10 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "docker:build": "docker build -f docker/Dockerfile -t catalogo-produtos-ui:latest .",
-    "docker:prod": "docker-compose -f Docker/docker-compose.yml up --build",
-    "docker:prod:detached": "docker-compose -f docker/docker-compose.prod.yml up -d --build"
+    "docker:prod": "docker-compose -f docker/docker-compose.yml up --build",
+    "docker:prod:detached": "docker-compose -f docker/docker-compose.prod.yml up -d --build",
+    "docker:down": "docker-compose -f docker/docker-compose.yml down",
+    "docker:down:prod": "docker-compose -f docker/docker-compose.prod.yml down"
   },
   "prettier": {
     "printWidth": 100,
