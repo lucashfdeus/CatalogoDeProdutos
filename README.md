@@ -18,7 +18,7 @@ git checkout frontend
 
 ### 3. Navegar para a pasta raiz do frontend
 ```bash
-cd frontend
+cd CatalogoDeProdutos\frontend\catalogo-produtos-ui
 ```
 
 ## 🚀 Execução Rápida (Desenvolvimento)
@@ -46,7 +46,7 @@ ou simplemente digite `localhost:4200` e pressione Enter
 
 ⚠️ **Importante**: Para executar os comandos Docker, você precisa estar na **pasta raiz do projeto frontend**:
 ```bash
-CatalogoDeProdutos\frontend>
+CatalogoDeProdutos\frontend\catalogo-produtos-ui
 ```
 
 ### Build da imagem Docker
