@@ -52,47 +52,7 @@ Sistema de catálogo de produtos com arquitetura em camadas, mensageria com Rabb
 4. Acesse a API Após a inicialização, a API estará disponível em:
    [https://localhost:5001/swagger](https://localhost:5001/swagger/index.html)
 
-## 🖥️ Frontend - Angular
-
-Aplicação desenvolvida com Angular, utilizando SCSS, componentes standalone e integração com a API de catálogo de produtos.
-
-### ⚙️ Tecnologias Utilizadas
-
-- **Angular**: Framework principal para construção da interface.
-- **SCSS**: Pré-processador CSS para estilos mais organizados e reutilizáveis.
-- **Componentes Standalone**: Arquitetura moderna do Angular para componentes independentes.
-- **Angular CLI**: Ferramenta para scaffolding, build e serve da aplicação.
-
-### 📁 Estrutura e Configurações
-
-- **Estilos globais**: `src/assets/styles.scss`
-- **Assets públicos**: Diretório `public/`
-- **Configurações de build**:
-  - Produção: otimização, hashing de arquivos, limites de tamanho.
-  - Desenvolvimento: source maps e licenças mantidas.
-
-### 🚀 Como Executar o Frontend
-
-#### Pré-requisitos
-
-- Node.js (versão recomendada: 18+)
-- Angular CLI
-
-#### Passo a Passo
-
-1. **Instale as dependências**
-   ```bash
-   npm install
-   ```
-2. **Execute em modo desenvolvimento**
-   ```bash
-   ng serve
-3. **Acesse no navegador**
-   ```bash
-   http://localhost:4200
-   ou h + o
-
-4. Caso não consiga rodar automaticamente as migrations, rodar manualmente
+5. Caso não consiga rodar automaticamente as migrations, rodar manualmente
 
 **Para Identity (`ApplicationDbContext`):**
 
@@ -116,4 +76,26 @@ dotnet ef migrations add _Inicial -c CatalogoDeProdutosDbContext
 
 # Aplicar a migration
 dotnet ef database update -c CatalogoDeProdutosDbContext
+````
 
+## 🖥️ Frontend - Angular
+
+Aplicação desenvolvida com Angular, utilizando SCSS, componentes standalone e integração com a API de catálogo de produtos.
+
+### ⚙️ Tecnologias Utilizadas
+
+- **Angular**: Framework principal para construção da interface.
+- **SCSS**: Pré-processador CSS para estilos mais organizados e reutilizáveis.
+- **Componentes Standalone**: Arquitetura moderna do Angular para componentes independentes.
+- **Angular CLI**: Ferramenta para scaffolding, build e serve da aplicação.
+
+### 📁 Estrutura e Configurações
+
+- **Estilos globais**: `src/assets/styles.scss`
+- **Assets públicos**: Diretório `public/`
+- **Configurações de build**:
+  - Produção: otimização, hashing de arquivos, limites de tamanho.
+  - Desenvolvimento: source maps e licenças mantidas.
+
+### 🚀 Como Executar o Frontend - Altere para branch "frontEnd"
+   [Branch FrontEnd](https://github.com/lucashfdeus/CatalogoDeProdutos/tree/frontend)
