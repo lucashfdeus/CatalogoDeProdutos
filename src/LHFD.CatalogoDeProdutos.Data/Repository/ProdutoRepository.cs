@@ -23,7 +23,7 @@ namespace LHFD.CatalogoDeProdutos.Data.Repository
                 .AsNoTracking()
                 .AsSplitQuery()
                 .Include(p => p.Departamento)
-                .OrderByDescending(p => p.Id)
+                .OrderBy(p => p.IdDepartamento)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
