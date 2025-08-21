@@ -1,101 +1,93 @@
-# BrackEnd
+# 🚀 Catalogo de Produtos - Backend
 
 Sistema de catálogo de produtos com arquitetura em camadas, mensageria com RabbitMQ e persistência em PostgreSQL. Desenvolvido com .NET 8.
 
-## 🛠️ Tecnologias Principais
+## 📋 Pré-requisitos
+
+- **.NET 8 SDK** - [Download aqui](https://dotnet.microsoft.com/en-us/download)
+- **Docker** - [Download aqui](https://www.docker.com/)
+- **Docker Compose** (vem incluído com Docker Desktop)
+- **Git** - Para clonar o repositório
+
+## 🚀 Como Executar
+
+### 1. Clonar o Repositório
+```bash
+git clone https://github.com/lucashfdeus/CatalogoDeProdutos.git
+cd CatalogoDeProdutos/backend
+```
+
+### 2. Executar com Docker Compose
+```bash
+docker-compose up --build
+```
+
+### 3. Acessar a API
+Após a inicialização, acesse:  
+**https://localhost:5001/swagger**
+
+## 🛠️ Tecnologias Utilizadas
 
 ### Backend (.NET 8)
-- **ASP.NET Core**: Framework principal para construção da API.
-- **Entity Framework Core**: ORM para acesso ao banco de dados PostgreSQL.
-- **AutoMapper**: Mapeamento entre objetos (DTOs e entidades).
-- **FluentValidation**: Validação de modelos.
-- **MassTransit + RabbitMQ**: Comunicação assíncrona entre serviços via mensageria.
-- **JWT Bearer Authentication**: Autenticação baseada em tokens.
-- **Swashbuckle (Swagger)**: Documentação interativa da API.
-- **Versionamento de API**: Gerenciado com `Asp.Versioning.Mvc.ApiExplorer`.
+- **ASP.NET Core** - Framework principal
+- **Entity Framework Core** - ORM para PostgreSQL
+- **AutoMapper** - Mapeamento entre objetos
+- **MassTransit + RabbitMQ** - Mensageria assíncrona
+- **JWT Bearer Authentication** - Autenticação por tokens
+- **Swagger** - Documentação interativa da API
 
 ### Banco de Dados
-- **PostgreSQL**: Banco de dados relacional utilizado.
-- **Npgsql**: Provider do EF Core para PostgreSQL.
+- **PostgreSQL** - Banco de dados principal
+- **Npgsql** - Provider para PostgreSQL
 
-### Serviços
-- **Worker Service**: Serviço consumidor de eventos RabbitMQ.
-- **Docker**: Contêineres para serviços e banco de dados.
-- **Docker Compose**: Orquestração dos contêineres.
+### Infraestrutura
+- **Docker** - Containerização
+- **Docker Compose** - Orquestração de containers
 
 ## 📁 Estrutura do Projeto
-- `LHFD.CatalogoDeProdutos.Api`: Camada de apresentação (API).
-- `LHFD.CatalogoDeProdutos.Business`: Regras de negócio e contratos.
-- `LHFD.CatalogoDeProdutos.Data`: Persistência e acesso ao banco.
-- `LHFD.CatalogoDeProdutos.EventConsumer`: Serviço Worker que consome eventos.
 
-## 🚀 Como Executar com Docker Compose
+```
+backend/
+├── LHFD.CatalogoDeProdutos.Api/          # Camada de apresentação (API)
+├── LHFD.CatalogoDeProdutos.Business/     # Regras de negócio e contratos
+├── LHFD.CatalogoDeProdutos.Data/         # Persistência e acesso ao banco
+└── LHFD.CatalogoDeProdutos.EventConsumer/ # Serviço Worker consumidor
+```
 
-### Pré-requisitos
+## ⚠️ Migrations Manuais (Se Necessário)
 
-- [.NET 8 SDK](https://dotnet.microsoft.com/en-us/download)
-- [Docker](https://www.docker.com/)
-- Docker Compose
+Caso as migrations não executem automaticamente:
 
-### Passo a Passo
-
-1. **Clone o repositório Branch Main**
-   ```bash
-   [git clone https://github.com/seu-usuario/LHFD.CatalogoDeProdutos.git](https://github.com/lucashfdeus/CatalogoDeProdutos.git)
-   ````
-   Navegue até a raiz do projeto EX: .../CatalogoDeProdutos\backend>
-   ```bash
-      cd CatalogoDeProdutos\backend
-3. *Execute o Docker Compose*
-   ```bash
-   docker-compose up --build
-4. Acesse a API Após a inicialização, a API estará disponível em:
-   [https://localhost:5001/swagger](https://localhost:5001/swagger/index.html)
-
-5. Caso não consiga rodar automaticamente as migrations, rodar manualmente
-
-**Para Identity (`ApplicationDbContext`):**
-
+### Para Identity (ApplicationDbContext):
 ```bash
-# Navegar até a pasta do projeto API
 cd LHFD.CatalogoDeProdutos.Api
-
-# Criar a migration inicial
-dotnet ef migrations add _Inicial -c ApplicationDbContext
-
-# Aplicar a migration
+dotnet ef migrations add Inicial -c ApplicationDbContext
 dotnet ef database update -c ApplicationDbContext
 ```
-**Para Produtos (`CatalogoDeProdutosDbContext`):**
+
+### Para Produtos (CatalogoDeProdutosDbContext):
 ```bash
-# Navegar até o projeto de Data
 cd LHFD.CatalogoDeProdutos.Data
-
-# Criar a migration inicial
-dotnet ef migrations add _Inicial -c CatalogoDeProdutosDbContext
-
-# Aplicar a migration
+dotnet ef migrations add Inicial -c CatalogoDeProdutosDbContext
 dotnet ef database update -c CatalogoDeProdutosDbContext
-````
+```
 
-## 🖥️ Frontend - Angular
+## 🌐 Frontend Angular
 
-Aplicação desenvolvida com Angular, utilizando SCSS, componentes standalone e integração com a API de catálogo de produtos.
+O frontend está disponível na branch **frontend** do mesmo repositório:
 
-### ⚙️ Tecnologias Utilizadas
+```bash
+git checkout frontend
+cd frontend
+npm install
+npm start
+```
 
-- **Angular**: Framework principal para construção da interface.
-- **SCSS**: Pré-processador CSS para estilos mais organizados e reutilizáveis.
-- **Componentes Standalone**: Arquitetura moderna do Angular para componentes independentes.
-- **Angular CLI**: Ferramenta para scaffolding, build e serve da aplicação.
+Acesse: **http://localhost:4200**
 
-### 📁 Estrutura e Configurações
+## 📞 Suporte
 
-- **Estilos globais**: `src/assets/styles.scss`
-- **Assets públicos**: Diretório `public/`
-- **Configurações de build**:
-  - Produção: otimização, hashing de arquivos, limites de tamanho.
-  - Desenvolvimento: source maps e licenças mantidas.
-
-### 🚀 Como Executar o Frontend - Altere para branch "frontEnd"
-   [Branch FrontEnd](https://github.com/lucashfdeus/CatalogoDeProdutos/tree/frontend)
+Em caso de problemas:
+1. Verifique se todos os containers estão rodando: `docker ps`
+2. Confirme se as portas 5001 (API) e 5432 (PostgreSQL) estão livres
+3. Execute `docker-compose logs` para ver logs detalhados
