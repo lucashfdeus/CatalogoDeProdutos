@@ -43,17 +43,46 @@ namespace LHFD.CatalogoDeProdutos.Api.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginUserDto model)
         {
-            var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, false, true);
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user is null)
+            {
+                return NotFound(new ProblemDetails
+                {
+                    Status = StatusCodes.Status404NotFound,
+                    Title = "Usuário não encontrado"
+                });
+            }
 
-            if (!result.Succeeded)
+            var result = await _signInManager.PasswordSignInAsync(user, model.Password, false, true);
+
+            if (result.Succeeded)
+                return Ok(await GenerateJwt(model.Email));
+
+            if (result.IsLockedOut)
+            {
                 return Unauthorized(new ProblemDetails
                 {
                     Status = StatusCodes.Status401Unauthorized,
-                    Title = "Usuário ou senha inválidos"
+                    Title = "Usuário bloqueado. Entre em contato com Administrador."
                 });
+            }
 
-            return Ok(await GenerateJwt(model.Email));
+            if (result.IsNotAllowed)
+            {
+                return Unauthorized(new ProblemDetails
+                {
+                    Status = StatusCodes.Status401Unauthorized,
+                    Title = "Usuário não tem permissão para login (confirme seu email ou habilite a conta)."
+                });
+            }
+
+            return Unauthorized(new ProblemDetails
+            {
+                Status = StatusCodes.Status401Unauthorized,
+                Title = "Senha inválida"
+            });
         }
+
 
         private static IdentityUser MapUserIdentity(RegisterUserDto model) => new()
         {
