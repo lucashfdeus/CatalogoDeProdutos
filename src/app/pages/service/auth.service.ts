@@ -57,38 +57,13 @@ export class AuthService {
     };
   }
 
-  private handleError(error: HttpErrorResponse, context: string): Observable<{ success: boolean; message: string; }> {
+  private handleError(error: any, context: string): Observable<{ success: boolean; message: string; }> {
     console.error(`Erro no ${context}:`, error);
 
-    const errorMessage = this.extractErrorMessage(error) || `Erro durante o ${context}`;
-    return of({ success: false, message: errorMessage });
-  }
+    const message = error instanceof Error ? error.message :
+      error?.error?.title ?? error?.error?.message ??
+      error?.message ?? `Erro durante o ${context}`;
 
-  private extractErrorMessage(error: HttpErrorResponse | any): string {
-    return error instanceof HttpErrorResponse
-      ? this.extractErrorFromHttpResponse(error)
-      : this.extractErrorFromObject(error);
-  }
-
-  private extractErrorFromHttpResponse(error: HttpErrorResponse): string {
-    if (error.error instanceof ErrorEvent) {
-      return 'Erro de conexão. Verifique sua internet.';
-    }
-
-    return this.extractErrorFromObject(error.error) || error.message || `Erro ${error.status}`;
-  }
-
-  private extractErrorFromObject(error: any): string {
-    if (!error) return '';
-
-    if (Array.isArray(error)) {
-      return error.map((e: any) => e.description || e.message).join(' | ');
-    }
-
-    if (typeof error === 'string') {
-      return error;
-    }
-
-    return error.title || error.message || error.description || 'Erro inesperado';
+    return of({ success: false, message });
   }
 }
