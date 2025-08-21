@@ -42,12 +42,15 @@ Sistema de catálogo de produtos com arquitetura em camadas, mensageria com Rabb
 1. **Clone o repositório Branch Main**
    ```bash
    [git clone https://github.com/seu-usuario/LHFD.CatalogoDeProdutos.git](https://github.com/lucashfdeus/CatalogoDeProdutos.git)
-   cd CatalogoDeProdutos\backend
-2. *Execute o Docker Compose*
+   ````
+   Navegue até a raiz do projeto EX: .../CatalogoDeProdutos\backend>
+   ```bash
+      cd CatalogoDeProdutos\backend
+3. *Execute o Docker Compose*
    ```bash
    docker-compose up --build
-3. Acesse a API Após a inicialização, a API estará disponível em:
-   [(http://localhost:5001/swagger](https://localhost:5001/swagger/index.html)
+4. Acesse a API Após a inicialização, a API estará disponível em:
+   [https://localhost:5001/swagger](https://localhost:5001/swagger/index.html)
 
 ## 🖥️ Frontend - Angular
 
