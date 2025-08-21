@@ -42,6 +42,16 @@ Abra seu navegador em:
 **http://localhost:4200**  
 ou simplemente digite `localhost:4200` e pressione Enter
 
+## **Crie uma nova conta de e-mail teste para começar a usar a plataforma.**
+
+Email: 
+```bash
+teste@gmail.com
+````
+Senha:
+```bash
+@Teste123
+````
 ## 🐳 Execução com Docker
 
 ⚠️ **Importante**: Para executar os comandos Docker, você precisa estar na **pasta raiz do projeto frontend**:
