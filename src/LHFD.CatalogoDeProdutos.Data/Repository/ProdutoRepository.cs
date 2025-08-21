@@ -2,14 +2,13 @@
 using LHFD.CatalogoDeProdutos.Business.Interfaces;
 using LHFD.CatalogoDeProdutos.Data.Context;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
 
 namespace LHFD.CatalogoDeProdutos.Data.Repository
 {
     public class ProdutoRepository : Repository<Produto>, IProdutoRepository
     {
         public ProdutoRepository(CatalogoDeProdutosDbContext context) : base(context) { }
-              
+
         public async Task<IEnumerable<Produto>> GetProdutoExistente(Guid id, string codigo)
         {
             return await GetAsync(p => p.Id == id && p.Codigo == codigo);
@@ -21,19 +20,19 @@ namespace LHFD.CatalogoDeProdutos.Data.Repository
             if (pageSize < 1) pageSize = 100;
 
             return await Db.Produtos
-                .AsNoTracking()              
-                .AsSplitQuery()              
+                .AsNoTracking()
+                .AsSplitQuery()
                 .Include(p => p.Departamento)
                 .OrderByDescending(p => p.Id)
-                .Skip((page - 1) * pageSize) 
-                .Take(pageSize)              
-                .ToListAsync();              
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
         }
 
         public async Task<Produto?> GetByIdWithDepartamentoAsync(Guid id)
         {
             return await Db.Produtos
-                .AsNoTracking()                  
+                .AsNoTracking()
                 .AsSplitQuery()
                 .Include(p => p.Departamento)
                 .FirstOrDefaultAsync(p => p.Id == id);
