@@ -24,7 +24,7 @@ docker-compose up --build
 
 ### 3. Acessar a API
 Após a inicialização, acesse:  
-**https://localhost:5001/swagger**
+**http://localhost:5000/swagger**
 
 ## 🛠️ Tecnologias Utilizadas
 
