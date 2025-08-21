@@ -1,59 +1,85 @@
-# CatalogoProdutosUi
+# 🚀 Como Executar o Frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.1.6.
+## 📋 Pré-requisitos
+- **Node.js** (versão 20.19.0 ou superior) recomendada (20.19.4)
 
-## Development server
+## 📥 Clonar e Configurar o Projeto
 
-To start a local development server, run:
+### 1. Clonar o projeto
+```bash
+git clone https://github.com/lucashfdeus/CatalogoDeProdutos.git
+```
 
+### 2. Acessar a branch frontend
+```bash
+cd CatalogoDeProdutos
+git checkout frontend
+```
+
+### 3. Navegar para a pasta raiz do frontend
+```bash
+cd CatalogoDeProdutos\frontend\catalogo-produtos-ui
+```
+
+## 🚀 Execução Rápida (Desenvolvimento)
+
+### 1. Instalar dependências
+```bash
+npm install
+```
+
+### 2. Iniciar servidor de desenvolvimento
+```bash
+npm start
+```
+ou
 ```bash
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+### 3. Acessar a aplicação
+Abra seu navegador em:  
+**http://localhost:4200**  
+ou simplemente digite `localhost:4200` e pressione Enter
 
-## Code scaffolding
+## **Crie uma nova conta de e-mail teste para começar a usar a plataforma.**
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
+Email: 
 ```bash
-ng generate component component-name
+teste@gmail.com
+````
+Senha:
+```bash
+@Teste123
+````
+## 🐳 Execução com Docker
+
+⚠️ **Importante**: Para executar os comandos Docker, você precisa estar na **pasta raiz do projeto frontend**:
+```bash
+CatalogoDeProdutos\frontend\catalogo-produtos-ui
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
+### Build da imagem Docker
 ```bash
-ng generate --help
+npm run docker:build
 ```
 
-## Building
-
-To build the project run:
-
+### Executar com Docker Compose
 ```bash
-ng build
+npm run docker:prod
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
+### Executar em segundo plano
 ```bash
-ng test
+npm run docker:prod:detached
 ```
 
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
+### Parar containers
 ```bash
-ng e2e
+npm run docker:down
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+## 💡 Observações
+- A aplicação recarrega automaticamente quando você edita os arquivos
+- Para funcionamento completo, a API precisa estar rodando em **https://localhost:5001**
+- Certifique-se de estar na pasta correta antes de executar comandos Docker
