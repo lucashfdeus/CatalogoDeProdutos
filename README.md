@@ -1,11 +1,11 @@
 # 🚀 Como Executar o Frontend
 
 ## 📋 Pré-requisitos
-- **Node.js** (versão 18 ou superior)
+- **Node.js** (versão 20.19.0 ou superior) recomendada (20.19.4)
 - **NPM** (vem incluído com o Node.js)
 - **Git** (para clonar o repositório)
 
-## 📥 Clonar o Repositório
+## 📥 Clonar e Configurar o Projeto
 
 ### 1. Clonar o projeto
 ```bash
@@ -20,7 +20,7 @@ git checkout frontend
 
 ### 3. Navegar para a pasta raiz do frontend
 ```bash
-cd frontend  # ou o nome da pasta do projeto frontend
+cd frontend
 ```
 
 ## 🚀 Execução Rápida (Desenvolvimento)
@@ -44,7 +44,12 @@ Abra seu navegador em:
 **http://localhost:4200**  
 ou simplemente digite `localhost:4200` e pressione Enter
 
-## 🐳 Execução com Docker (Opcional)
+## 🐳 Execução com Docker
+
+⚠️ **Importante**: Para executar os comandos Docker, você precisa estar na **pasta raiz do projeto frontend**:
+```bash
+CatalogoDeProdutos\frontend>
+```
 
 ### Build da imagem Docker
 ```bash
@@ -69,3 +74,4 @@ npm run docker:down
 ## 💡 Observações
 - A aplicação recarrega automaticamente quando você edita os arquivos
 - Para funcionamento completo, a API precisa estar rodando em **https://localhost:5001**
+- Certifique-se de estar na pasta correta antes de executar comandos Docker
