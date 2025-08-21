@@ -3,6 +3,7 @@ using System;
 using LHFD.CatalogoDeProdutos.Data.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LHFD.CatalogoDeProdutos.Data.Migrations
 {
     [DbContext(typeof(CatalogoDeProdutosDbContext))]
-    partial class CatalogoDeProdutosDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250821000505_202508202059_ProdutoEDepartamento")]
+    partial class _202508202059_ProdutoEDepartamento
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

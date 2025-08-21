@@ -8,5 +8,6 @@ namespace LHFD.CatalogoDeProdutos.Business.Entities
 
         [Key]
         public Guid Id { get; set; }
+        public bool IsDeleted { get; set; } = false;
     }
 }

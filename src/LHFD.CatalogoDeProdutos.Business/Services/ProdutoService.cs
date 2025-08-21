@@ -101,13 +101,13 @@ namespace LHFD.CatalogoDeProdutos.Business.Services
                 return false;
             }
 
-            if (produto.Status == false)
+            if (produto.IsDeleted)
             {
-                Notify("Produto já está inativo.");
+                Notify("Produto já foi excluído.");
                 return false;
             }
 
-            produto.Status = false;
+            produto.IsDeleted = true;
 
             await _productRepository.UpdateAsync(produto);
 

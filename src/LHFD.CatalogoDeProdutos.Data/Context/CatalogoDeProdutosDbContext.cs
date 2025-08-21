@@ -23,6 +23,8 @@ namespace LHFD.CatalogoDeProdutos.Data.Context
 
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(CatalogoDeProdutosDbContext).Assembly);
 
+            modelBuilder.Entity<Produto>().HasQueryFilter(p => !p.IsDeleted);
+
             base.OnModelCreating(modelBuilder);
         }
     }

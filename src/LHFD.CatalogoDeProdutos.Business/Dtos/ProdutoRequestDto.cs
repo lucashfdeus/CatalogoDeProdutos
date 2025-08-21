@@ -6,6 +6,7 @@
         public string Codigo { get; set; } = string.Empty;
         public string Descricao { get; set; } = string.Empty;
         public decimal Preco { get; set; }
+        public bool Status { get; set; }
         public int IdDepartamento { get; set; }
     }
 }
