@@ -6,7 +6,7 @@ services:
       context: ./src
       dockerfile: LHFD.CatalogoDeProdutos.Api/Dockerfile
     ports:
-      - 5001:5001
+      - 5000:5000
     depends_on:
       - rabbitmq
       - postgres
@@ -14,6 +14,7 @@ services:
       - lhfd-network
     environment:
       - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=CatalogoDeProdutos;Username=postgres;Password=produto
+      - ASPNETCORE_ENVIRONMENT=Development
 
   event-consumer:
     build:
