@@ -2,8 +2,6 @@
 
 ## 📋 Pré-requisitos
 - **Node.js** (versão 20.19.0 ou superior) recomendada (20.19.4)
-- **NPM** (vem incluído com o Node.js)
-- **Git** (para clonar o repositório)
 
 ## 📥 Clonar e Configurar o Projeto
 
