@@ -6,7 +6,10 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "docker:build": "docker build -f docker/Dockerfile -t catalogo-produtos-ui:latest .",
+    "docker:prod": "docker-compose -f Docker/docker-compose.yml up --build",
+    "docker:prod:detached": "docker-compose -f docker/docker-compose.prod.yml up -d --build"
   },
   "prettier": {
     "printWidth": 100,

@@ -1,0 +1,13 @@
+.git
+.gitignore
+node_modules
+dist
+*.log
+.env
+.env.*
+.vscode
+.idea
+*.tar.gz
+*.zip
+README.md
+!nginx.conf

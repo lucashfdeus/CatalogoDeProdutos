@@ -1,0 +1,16 @@
+version: '3.8'
+services:
+  catalogo-produtos-prod:
+    build:
+      context: ..
+      dockerfile: Docker/Dockerfile
+    container_name: catalogo-produtos-prod
+    ports:
+      - "4200:80"
+    restart: unless-stopped
+    networks:
+      - catalogo-network
+
+networks:
+  catalogo-network:
+    driver: bridge
